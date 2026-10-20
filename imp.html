@@ -42,6 +42,40 @@
       --cal-totlabels-y: 0.5mm;
       --cal-totvals-x: -2.5mm;
       --cal-totvals-y: 0mm;
+
+      /* ===== Items individuales de los bloques (mm) ===== */
+      --cal-pago-efectivo-x: 2.5mm;
+      --cal-pago-efectivo-y: -1mm;
+      --cal-pago-debito-x: 2.5mm;
+      --cal-pago-debito-y: -1mm;
+      --cal-pago-credito-x: 2.5mm;
+      --cal-pago-credito-y: -1mm;
+      --cal-pago-transferencia-x: 2.5mm;
+      --cal-pago-transferencia-y: -1mm;
+      --cal-pago-movil-x: 2.5mm;
+      --cal-pago-movil-y: -1mm;
+      --cal-pago-banco-x: 2.5mm;
+      --cal-pago-banco-y: -1mm;
+      --cal-bcv-tasa-x: 2.5mm;
+      --cal-bcv-tasa-y: 0mm;
+      --cal-bcv-divisas-x: 2.5mm;
+      --cal-bcv-divisas-y: 0mm;
+      --cal-tot-iva-pct-x: -3mm;
+      --cal-tot-iva-pct-y: 0.5mm;
+      --cal-tot-iva-base-x: -3mm;
+      --cal-tot-iva-base-y: 0.5mm;
+      --cal-tot-igtf-base-x: -3mm;
+      --cal-tot-igtf-base-y: 0.5mm;
+      --cal-tot-base-x: -2.5mm;
+      --cal-tot-base-y: 0mm;
+      --cal-tot-otros-x: -2.5mm;
+      --cal-tot-otros-y: 0mm;
+      --cal-tot-iva-x: -2.5mm;
+      --cal-tot-iva-y: 0mm;
+      --cal-tot-igtf-x: -2.5mm;
+      --cal-tot-igtf-y: 0mm;
+      --cal-tot-total-x: -2.5mm;
+      --cal-tot-total-y: 0mm;
       --cal-footer-x: 0mm;
       --cal-footer-y: 0mm;
     }
@@ -139,7 +173,7 @@
       /* Asegurar que únicamente los datos a imprimir sean visibles y en negro puro */
       .print-data {
         visibility: visible !important;
-        color: #000000 !important;
+        color: red !important;
       }
     }
 
@@ -797,14 +831,10 @@
       line-height: 1;
     }
 
-    /* ==================== CALIBRACIÓN INDEPENDIENTE POR SECCIÓN ==================== */
-    /* Solo se desplaza el dato impreso (.print-data). Los rótulos preimpresos quedan fijos. */
+    /* ==================== CALIBRACIÓN INDEPENDIENTE POR SECCIÓN / ITEM ==================== */
+    /* Solo se desplaza el dato impreso. Los rótulos, líneas y bordes preimpresos quedan fijos. */
     .top-bar .print-data,
-    .client-box .print-data,
-    .payment-col .print-data,
-    .bcv-col .print-data,
-    .totals-labels-col .print-data,
-    .totals-values-col {
+    .client-box .print-data {
       position: relative;
     }
 
@@ -818,25 +848,25 @@
       top: var(--cal-cliente-y);
     }
 
-    .payment-col .print-data {
-      left: var(--cal-pago-x);
-      top: var(--cal-pago-y);
-    }
+    /* Cada item se mueve por separado */
+    .cal-cell { display: inline-block; }
 
-    .bcv-col .print-data {
-      left: var(--cal-bcv-x);
-      top: var(--cal-bcv-y);
-    }
-
-    .totals-labels-col .print-data {
-      left: var(--cal-totlabels-x);
-      top: var(--cal-totlabels-y);
-    }
-
-    .totals-values-col {
-      left: var(--cal-totvals-x);
-      top: var(--cal-totvals-y);
-    }
+    .cal-it-pago-efectivo { transform: translate(var(--cal-pago-efectivo-x), var(--cal-pago-efectivo-y)); }
+    .cal-it-pago-debito { transform: translate(var(--cal-pago-debito-x), var(--cal-pago-debito-y)); }
+    .cal-it-pago-credito { transform: translate(var(--cal-pago-credito-x), var(--cal-pago-credito-y)); }
+    .cal-it-pago-transferencia { transform: translate(var(--cal-pago-transferencia-x), var(--cal-pago-transferencia-y)); }
+    .cal-it-pago-movil { transform: translate(var(--cal-pago-movil-x), var(--cal-pago-movil-y)); }
+    .cal-it-pago-banco { transform: translate(var(--cal-pago-banco-x), var(--cal-pago-banco-y)); }
+    .cal-it-bcv-tasa { transform: translate(var(--cal-bcv-tasa-x), var(--cal-bcv-tasa-y)); }
+    .cal-it-bcv-divisas { transform: translate(var(--cal-bcv-divisas-x), var(--cal-bcv-divisas-y)); }
+    .cal-it-tot-iva-pct { transform: translate(var(--cal-tot-iva-pct-x), var(--cal-tot-iva-pct-y)); }
+    .cal-it-tot-iva-base { transform: translate(var(--cal-tot-iva-base-x), var(--cal-tot-iva-base-y)); }
+    .cal-it-tot-igtf-base { transform: translate(var(--cal-tot-igtf-base-x), var(--cal-tot-igtf-base-y)); }
+    .cal-it-tot-base { transform: translate(var(--cal-tot-base-x), var(--cal-tot-base-y)); }
+    .cal-it-tot-otros { transform: translate(var(--cal-tot-otros-x), var(--cal-tot-otros-y)); }
+    .cal-it-tot-iva { transform: translate(var(--cal-tot-iva-x), var(--cal-tot-iva-y)); }
+    .cal-it-tot-igtf { transform: translate(var(--cal-tot-igtf-x), var(--cal-tot-igtf-y)); }
+    .cal-it-tot-total { transform: translate(var(--cal-tot-total-x), var(--cal-tot-total-y)); }
 
     /* El texto de cada celda de datos se envuelve en .cal-cell para moverlo sin arrastrar los bordes ni los encabezados */
     .items-table .cal-cell {
@@ -931,6 +961,21 @@
       color: #E1A413;
       border-left-color: #E1A413;
       font-weight: 700;
+    }
+
+    .cal-nav-group {
+      display: block;
+      padding: 12px 16px 5px;
+      font: 700 10px Arial, sans-serif;
+      letter-spacing: .7px;
+      text-transform: uppercase;
+      color: #E1A413;
+      opacity: .9;
+    }
+
+    .cal-sections a.cal-nav-item {
+      padding-left: 30px;
+      font-size: 12px;
     }
 
     .cal-controls {
@@ -1317,14 +1362,14 @@
 
   <aside class="cal-panel" id="calPanel" aria-hidden="false">
     <div class="cal-panel-head">
-      <strong>Calibración por sección</strong>
+      <strong>Calibración por item</strong>
       <button type="button" id="calClose" title="Cerrar panel">×</button>
     </div>
 
     <nav class="cal-sections" id="calSections"></nav>
 
     <div class="cal-controls" id="calControls">
-      <div class="cal-current" id="calCurrent">Selecciona una sección</div>
+      <div class="cal-current" id="calCurrent">Selecciona un item</div>
 
       <div class="cal-axis">
         <span class="cal-axis-label">Eje X (mm)</span>
@@ -1349,7 +1394,7 @@
       </div>
 
       <div class="cal-actions">
-        <button type="button" id="calResetSection">Reset sección</button>
+        <button type="button" id="calResetSection">Reset item</button>
         <button type="button" id="calResetAll">Reset todo</button>
       </div>
 
@@ -1358,7 +1403,7 @@
       <div class="cal-msg" id="calMsg"></div>
 
       <button type="button" class="cal-save" id="calSave">💾 Guardar imp.html</button>
-      <p class="cal-hint">Mueve solo el dato impreso; los rótulos y encabezados preimpresos quedan fijos. Carga un HTML calibrado (ej. <b>imp3.html</b>) para recuperar sus valores. Guardar genera <b>imp.html</b> con los valores fijos y sin panel.</p>
+      <p class="cal-hint">Mueve solo el dato impreso; los rótulos, líneas y encabezados preimpresos quedan fijos. Forma de Pago, Ley IVA/BCV y Totales se calibran item por item. Carga un HTML calibrado (ej. <b>imp3.html</b>) para recuperar sus valores. Guardar genera <b>imp.html</b> con los valores fijos y sin panel.</p>
     </div>
   </aside>
 
@@ -1719,19 +1764,19 @@
         <div class="payment-col">
           <div class="payment-title preprinted">FORMA DE PAGO:</div>
           <div class="payment-checks">
-            <span class="check-item"><span class="preprinted">Efectivo</span> <i class="checkbox-sq"><span class="print-data"></span></i></span>
-            <span class="check-item"><span class="preprinted">Tarj. de Débito</span> <i class="checkbox-sq"><span class="print-data"></span></i></span>
-            <span class="check-item"><span class="preprinted">Tarj. de Crédito</span> <i class="checkbox-sq"><span class="print-data"></span></i></span>
+            <span class="check-item" data-cal="pago-efectivo"><span class="preprinted">Efectivo</span> <i class="checkbox-sq"><span class="print-data"></span></i></span>
+            <span class="check-item" data-cal="pago-debito"><span class="preprinted">Tarj. de Débito</span> <i class="checkbox-sq"><span class="print-data"></span></i></span>
+            <span class="check-item" data-cal="pago-credito"><span class="preprinted">Tarj. de Crédito</span> <i class="checkbox-sq"><span class="print-data"></span></i></span>
           </div>
-          <div class="payment-line">
+          <div class="payment-line" data-cal="pago-transferencia">
             <span class="preprinted">Transferencia</span>
             <div class="line-fill print-data"></div>
           </div>
-          <div class="payment-line">
+          <div class="payment-line" data-cal="pago-movil">
             <span class="preprinted">Pago Móvil</span>
             <div class="line-fill print-data"></div>
           </div>
-          <div class="payment-line">
+          <div class="payment-line" data-cal="pago-banco">
             <span class="preprinted">Banco</span>
             <div class="line-fill print-data"></div>
           </div>
@@ -1742,12 +1787,12 @@
           <div class="bcv-text">
             <span class="preprinted">Para cumplir con el Art. 25 de la ley del</span><br />
             <span class="preprinted">IVA, se expresan los montos en Bs.</span><br />
-            <span class="preprinted">aplicando la tasa de cambio</span><span class="inline-line print-data"></span><br />
+            <span class="preprinted">aplicando la tasa de cambio</span><span class="inline-line print-data" data-cal="bcv-tasa"></span><br />
             <span class="preprinted">establecida por el BCV.</span>
           </div>
           <div class="divisas-line">
             <span class="preprinted">Monto Recibido en Divisas:</span>
-            <div class="line-fill print-data"></div>
+            <div class="line-fill print-data" data-cal="bcv-divisas"></div>
           </div>
         </div>
 
@@ -1758,15 +1803,15 @@
           <div class="tot-row-label h-iva">
             <div class="iva-line-container">
               <span class="preprinted">I.V.A.</span>
-              <span class="blank-pct print-data"></span>
+              <span class="blank-pct print-data" data-cal="tot-iva-pct"></span>
               <span class="preprinted">% SOBRE Bs.</span>
-              <span class="blank-monto print-data"></span>
+              <span class="blank-monto print-data" data-cal="tot-iva-base"></span>
             </div>
           </div>
           <div class="tot-row-label h-igtf">
             <div class="igtf-main">
               <span class="preprinted">3% IGTF Bs.</span>
-              <span class="blank-monto print-data"></span>
+              <span class="blank-monto print-data" data-cal="tot-igtf-base"></span>
             </div>
             <div class="igtf-sub preprinted">S/Prov. SNAT/2022/000013 del 03/03/2022</div>
           </div>
@@ -1775,11 +1820,11 @@
 
         <!-- Columna 4: Casillas de Totales -->
         <div class="totals-values-col print-data">
-          <div class="tot-val-cell h-base"></div>
-          <div class="tot-val-cell h-otros"></div>
-          <div class="tot-val-cell h-iva"></div>
-          <div class="tot-val-cell h-igtf"></div>
-          <div class="tot-val-cell"></div>
+          <div class="tot-val-cell h-base" data-cal="tot-base"></div>
+          <div class="tot-val-cell h-otros" data-cal="tot-otros"></div>
+          <div class="tot-val-cell h-iva" data-cal="tot-iva"></div>
+          <div class="tot-val-cell h-igtf" data-cal="tot-igtf"></div>
+          <div class="tot-val-cell" data-cal="tot-total"></div>
         </div>
       </div>
     </section>
@@ -1837,7 +1882,8 @@
     (function () {
       'use strict';
 
-      var SECTIONS = [
+      // Bloques: se mueven como un conjunto
+      var BLOCKS = [
         { id: 'emision',   label: 'Fecha / Factura N°' },
         { id: 'cliente',   label: 'Datos del Cliente' },
         { id: 'renglon',   label: 'Columna RENGLÓN' },
@@ -1845,12 +1891,45 @@
         { id: 'cant',      label: 'Columna CANTIDAD' },
         { id: 'precio',    label: 'Columna PRECIO UNITARIO' },
         { id: 'exento',    label: 'Columna (E) EXENTO' },
-        { id: 'monto',     label: 'Columna MONTO' },
-        { id: 'pago',      label: 'Forma de Pago' },
-        { id: 'bcv',       label: 'Ley IVA / BCV' },
-        { id: 'totlabels', label: 'Etiquetas de Totales' },
-        { id: 'totvals',   label: 'Valores de Totales' }
+        { id: 'monto',     label: 'Columna MONTO' }
       ];
+
+      // Items: se mueven uno por uno
+      var ITEMS = [
+        { id: 'pago-efectivo',      label: 'Efectivo',         group: 'Forma de Pago', target: '[data-cal="pago-efectivo"] .checkbox-sq .print-data' },
+        { id: 'pago-debito',        label: 'Tarj. de Débito',  group: 'Forma de Pago', target: '[data-cal="pago-debito"] .checkbox-sq .print-data' },
+        { id: 'pago-credito',       label: 'Tarj. de Crédito', group: 'Forma de Pago', target: '[data-cal="pago-credito"] .checkbox-sq .print-data' },
+        { id: 'pago-transferencia', label: 'Transferencia',    group: 'Forma de Pago', target: '[data-cal="pago-transferencia"] .line-fill' },
+        { id: 'pago-movil',         label: 'Pago móvil',       group: 'Forma de Pago', target: '[data-cal="pago-movil"] .line-fill' },
+        { id: 'pago-banco',         label: 'Banco',            group: 'Forma de Pago', target: '[data-cal="pago-banco"] .line-fill' },
+        { id: 'bcv-tasa',           label: 'Tasa de cambio',   group: 'Ley IVA / BCV', target: '[data-cal="bcv-tasa"]' },
+        { id: 'bcv-divisas',        label: 'Monto en divisas', group: 'Ley IVA / BCV', target: '[data-cal="bcv-divisas"]' },
+        { id: 'tot-iva-pct',        label: 'I.V.A. %',         group: 'Totales', target: '[data-cal="tot-iva-pct"]' },
+        { id: 'tot-iva-base',       label: 'I.V.A. sobre Bs.', group: 'Totales', target: '[data-cal="tot-iva-base"]' },
+        { id: 'tot-igtf-base',      label: 'Base IGTF (3%)',   group: 'Totales', target: '[data-cal="tot-igtf-base"]' },
+        { id: 'tot-base',           label: 'BASE Bs.',         group: 'Totales', target: '[data-cal="tot-base"]' },
+        { id: 'tot-otros',          label: 'OTROS Bs.',        group: 'Totales', target: '[data-cal="tot-otros"]' },
+        { id: 'tot-iva',            label: 'I.V.A. Bs.',       group: 'Totales', target: '[data-cal="tot-iva"]' },
+        { id: 'tot-igtf',           label: 'IGTF Bs.',         group: 'Totales', target: '[data-cal="tot-igtf"]' },
+        { id: 'tot-total',          label: 'TOTAL A PAGAR',    group: 'Totales', target: '[data-cal="tot-total"]' }
+      ];
+
+      var ALL = BLOCKS.concat(ITEMS);
+
+      // Bloque antiguo -> items que heredan su ajuste (calibraciones viejas)
+      var BLOCK_ITEMS = {
+        pago: ['pago-efectivo', 'pago-debito', 'pago-credito', 'pago-transferencia', 'pago-movil', 'pago-banco'],
+        bcv: ['bcv-tasa', 'bcv-divisas'],
+        totlabels: ['tot-iva-pct', 'tot-iva-base', 'tot-igtf-base'],
+        totvals: ['tot-base', 'tot-otros', 'tot-iva', 'tot-igtf', 'tot-total']
+      };
+
+      function blockOf(id) {
+        for (var b in BLOCK_ITEMS) {
+          if (BLOCK_ITEMS[b].indexOf(id) !== -1) return b;
+        }
+        return null;
+      }
 
       var STORAGE_KEY = 'talonario-cal-v2';
       var root = document.documentElement;
@@ -1859,10 +1938,22 @@
 
       // Base inicial: lo que ya esté escrito en el CSS (:root) del propio archivo.
       var initialStyles = getComputedStyle(root);
-      SECTIONS.forEach(function (s) {
+
+      function readInitial(id, axis) {
+        var v = parseFloat(initialStyles.getPropertyValue('--cal-' + id + '-' + axis));
+        if (!isNaN(v)) return v;
+        var b = blockOf(id);
+        if (b) {
+          var f = parseFloat(initialStyles.getPropertyValue('--cal-' + b + '-' + axis));
+          if (!isNaN(f)) return f;
+        }
+        return 0;
+      }
+
+      ALL.forEach(function (s) {
         state[s.id] = {
-          x: parseFloat(initialStyles.getPropertyValue('--cal-' + s.id + '-x')) || 0,
-          y: parseFloat(initialStyles.getPropertyValue('--cal-' + s.id + '-y')) || 0
+          x: readInitial(s.id, 'x'),
+          y: readInitial(s.id, 'y')
         };
       });
 
@@ -1870,7 +1961,15 @@
       try {
         var saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
         if (saved) {
-          SECTIONS.forEach(function (s) {
+          // Calibraciones viejas por bloque: se reparten entre sus items
+          Object.keys(BLOCK_ITEMS).forEach(function (b) {
+            if (saved[b]) {
+              BLOCK_ITEMS[b].forEach(function (id) {
+                state[id] = { x: +saved[b].x || 0, y: +saved[b].y || 0 };
+              });
+            }
+          });
+          ALL.forEach(function (s) {
             if (saved[s.id]) {
               state[s.id] = { x: +saved[s.id].x || 0, y: +saved[s.id].y || 0 };
             }
@@ -1888,10 +1987,26 @@
         });
       }
 
+      // Cada item de dato se envuelve para mover solo el texto, no la línea ni el rótulo.
+      function wrapItems() {
+        ITEMS.forEach(function (item) {
+          var outer = document.querySelector(item.target);
+          if (!outer) return;
+          var inner = outer.querySelector('.cal-cell');
+          if (!inner) {
+            inner = document.createElement('span');
+            inner.className = 'cal-cell';
+            while (outer.firstChild) inner.appendChild(outer.firstChild);
+            outer.appendChild(inner);
+          }
+          inner.classList.add('cal-it-' + item.id);
+        });
+      }
+
       function round1(n) { return Math.round(n * 10) / 10; }
 
       function applyAll() {
-        SECTIONS.forEach(function (s) {
+        ALL.forEach(function (s) {
           var v = state[s.id];
           root.style.setProperty('--cal-' + s.id + '-x', v.x + 'mm');
           root.style.setProperty('--cal-' + s.id + '-y', v.y + 'mm');
@@ -1904,13 +2019,15 @@
 
       function targetsFor(id) {
         function q(sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); }
+        var item = ITEMS.filter(function (it) { return it.id === id; })[0];
+        if (item) {
+          var outer = document.querySelector(item.target);
+          if (!outer) return [];
+          return [outer.querySelector('.cal-cell') || outer];
+        }
         switch (id) {
           case 'emision':   return q('.top-bar .print-data');
           case 'cliente':   return q('.client-box .print-data');
-          case 'pago':      return q('.payment-col .print-data');
-          case 'bcv':       return q('.bcv-col .print-data');
-          case 'totlabels': return q('.totals-labels-col .print-data');
-          case 'totvals':   return q('.totals-values-col');
           default:
             var idx = { renglon: 1, desc: 2, cant: 3, precio: 4, exento: 5, monto: 6 }[id];
             if (!idx) return [];
@@ -1936,7 +2053,7 @@
           return;
         }
 
-        var info = SECTIONS.filter(function (s) { return s.id === current; })[0];
+        var info = ALL.filter(function (s) { return s.id === current; })[0];
         label.textContent = info ? info.label : current;
         outX.textContent = state[current].x.toFixed(1);
         outY.textContent = state[current].y.toFixed(1);
@@ -1970,7 +2087,7 @@
       }
 
       function resetAll() {
-        SECTIONS.forEach(function (s) { state[s.id] = { x: 0, y: 0 }; });
+        ALL.forEach(function (s) { state[s.id] = { x: 0, y: 0 }; });
         applyAll();
         persist();
         refreshControls();
@@ -1985,17 +2102,32 @@
       }
 
       function importFromText(text) {
-        var parsed = {};
-        var re = /--cal-([a-z]+)-([xy])\s*:\s*(-?\d+(?:\.\d+)?)mm/g;
+        var found = {};
+        var re = /--cal-([a-z0-9-]+)-([xy])\s*:\s*(-?\d+(?:\.\d+)?)mm/g;
         var m;
 
         while ((m = re.exec(text)) !== null) {
-          var id = m[1];
-          var axis = m[2];
-          if (!state[id]) continue; // ignora variables sin sección activa
-          state[id][axis] = round1(Math.max(-30, Math.min(30, parseFloat(m[3]))));
-          parsed[id] = true;
+          found[m[1]] = found[m[1]] || {};
+          found[m[1]][m[2]] = round1(Math.max(-30, Math.min(30, parseFloat(m[3]))));
         }
+
+        var parsed = {};
+
+        // Calibraciones viejas por bloque: se reparten entre sus items
+        Object.keys(BLOCK_ITEMS).forEach(function (b) {
+          if (!found[b]) return;
+          BLOCK_ITEMS[b].forEach(function (id) {
+            state[id] = { x: found[b].x || 0, y: found[b].y || 0 };
+            parsed[id] = true;
+          });
+        });
+
+        // Items con valor propio
+        ALL.forEach(function (s) {
+          if (!found[s.id]) return;
+          state[s.id] = { x: found[s.id].x || 0, y: found[s.id].y || 0 };
+          parsed[s.id] = true;
+        });
 
         var ox = /--offset-x\s*:\s*(-?\d+(?:\.\d+)?)mm/.exec(text);
         var oy = /--offset-y\s*:\s*(-?\d+(?:\.\d+)?)mm/.exec(text);
@@ -2012,11 +2144,22 @@
 
       function buildNav() {
         var nav = document.getElementById('calSections');
-        SECTIONS.forEach(function (s) {
+        var lastGroup = null;
+
+        ALL.forEach(function (s) {
+          if (s.group && s.group !== lastGroup) {
+            var h = document.createElement('span');
+            h.className = 'cal-nav-group';
+            h.textContent = s.group;
+            nav.appendChild(h);
+            lastGroup = s.group;
+          }
+
           var a = document.createElement('a');
           a.href = '#';
           a.setAttribute('data-id', s.id);
           a.textContent = s.label;
+          if (s.group) a.className = 'cal-nav-item';
           a.addEventListener('click', function (ev) {
             ev.preventDefault();
             select(s.id);
@@ -2048,7 +2191,7 @@
 
         if (styleEl) {
           var css = styleEl.textContent;
-          SECTIONS.forEach(function (s) {
+          ALL.forEach(function (s) {
             var v = state[s.id];
             css = css.replace(
               new RegExp('--cal-' + s.id + '-x\\s*:\\s*[^;]+;'),
@@ -2066,7 +2209,7 @@
 
         // Quitar variables inline del <html>: ya quedaron fijas en :root
         var inlineProps = ['--offset-x', '--offset-y'];
-        SECTIONS.forEach(function (s) {
+        ALL.forEach(function (s) {
           inlineProps.push('--cal-' + s.id + '-x', '--cal-' + s.id + '-y');
         });
         inlineProps.forEach(function (prop) { clone.style.removeProperty(prop); });
@@ -2111,9 +2254,11 @@
 
       window.__saveImp = save;
       window.__bakeImp = bakeHtml;
+      window.__importCal = importFromText;
 
       document.addEventListener('DOMContentLoaded', function () {
         wrapCells();
+        wrapItems();
         buildNav();
         applyAll();
         refreshControls();
@@ -2197,6 +2342,7 @@
       function setVal(id, v) { var el = document.getElementById(id); if (el) el.value = v; }
       function setChecked(id, v) { var el = document.getElementById(id); if (el) el.checked = !!v; }
       function textOf(sel) { var el = document.querySelector(sel); return el ? el.textContent.trim() : ''; }
+      function slot(el) { return el ? (el.querySelector('.cal-cell') || el) : null; }
       function cellText(cell) {
         if (!cell) return '';
         var inner = cell.querySelector('.cal-cell');
@@ -2433,14 +2579,14 @@
         });
 
         // Totales (todos manuales)
-        text(document.querySelector('.totals-labels-col .blank-pct'), val('d-iva-pct'));
+        text(slot(document.querySelector('.totals-labels-col .blank-pct')), val('d-iva-pct'));
         var labelMontos = document.querySelectorAll('.totals-labels-col .blank-monto');
-        text(labelMontos[0], val('d-iva-base'));
-        text(labelMontos[1], val('d-igtf-base'));
+        text(slot(labelMontos[0]), val('d-iva-base'));
+        text(slot(labelMontos[1]), val('d-igtf-base'));
 
         var cellsTot = document.querySelectorAll('.totals-values-col .tot-val-cell');
         [val('d-base'), val('d-otros'), val('d-iva'), val('d-igtf'), val('d-total')]
-          .forEach(function (v, i) { text(cellsTot[i], v); });
+          .forEach(function (v, i) { text(slot(cellsTot[i]), v); });
 
         // Forma de pago
         var checks = document.querySelectorAll('.payment-col .checkbox-sq .print-data');
@@ -2448,16 +2594,16 @@
           document.getElementById('d-efectivo').checked,
           document.getElementById('d-debito').checked,
           document.getElementById('d-credito').checked
-        ].forEach(function (on, i) { text(checks[i], on ? 'X' : ''); });
+        ].forEach(function (on, i) { text(slot(checks[i]), on ? 'X' : ''); });
 
         var fills = document.querySelectorAll('.payment-col .line-fill');
-        text(fills[0], val('d-transferencia'));
-        text(fills[1], val('d-movil'));
-        text(fills[2], val('d-banco'));
+        text(slot(fills[0]), val('d-transferencia'));
+        text(slot(fills[1]), val('d-movil'));
+        text(slot(fills[2]), val('d-banco'));
 
         // BCV
-        text(document.querySelector('.bcv-col .inline-line'), val('d-tasa'));
-        text(document.querySelector('.bcv-col .line-fill'), val('d-divisas'));
+        text(slot(document.querySelector('.bcv-col .inline-line')), val('d-tasa'));
+        text(slot(document.querySelector('.bcv-col .line-fill')), val('d-divisas'));
 
         persist();
       }
