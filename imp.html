@@ -1,0 +1,2557 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Impresión sobre Talonario - SPEED GROUPS C.A.</title>
+  <style>
+    @page {
+      size: letter portrait;
+      margin: 0;
+    }
+
+    :root {
+      /* Variables de calibración fina (puedes ajustarlas en mm si la impresora desfasa) */
+      --offset-x: 0mm;
+      --offset-y: 0mm;
+
+      /* ===== Calibración independiente por sección (mm) ===== */
+      --cal-header-x: 0mm;
+      --cal-header-y: 0mm;
+      --cal-emision-x: 1.3mm;
+      --cal-emision-y: 0.9mm;
+      --cal-cliente-x: 1.5mm;
+      --cal-cliente-y: -0.6mm;
+      --cal-renglon-x: 2.2mm;
+      --cal-renglon-y: 0mm;
+      --cal-desc-x: 2.2mm;
+      --cal-desc-y: 0mm;
+      --cal-cant-x: -0.2mm;
+      --cal-cant-y: 0mm;
+      --cal-precio-x: -2.5mm;
+      --cal-precio-y: 0mm;
+      --cal-exento-x: -0.8mm;
+      --cal-exento-y: -0.2mm;
+      --cal-monto-x: -2.5mm;
+      --cal-monto-y: 0mm;
+      --cal-pago-x: 2.5mm;
+      --cal-pago-y: -1mm;
+      --cal-bcv-x: 2.5mm;
+      --cal-bcv-y: 0mm;
+      --cal-totlabels-x: -3mm;
+      --cal-totlabels-y: 0.5mm;
+      --cal-totvals-x: -2.5mm;
+      --cal-totvals-y: 0mm;
+      --cal-footer-x: 0mm;
+      --cal-footer-y: 0mm;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    body {
+      background-color: #e5e5e5;
+      font-family: Arial, Helvetica, sans-serif;
+      color: #111;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 15px 0;
+    }
+
+    /* Barra de herramientas flotante (No sale en la impresión) */
+    .toolbar {
+      background: #222;
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      display: flex;
+      gap: 15px;
+      align-items: center;
+      font-size: 13px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      z-index: 100;
+    }
+
+    .toolbar button {
+      background: #E1A413;
+      color: #111;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .toolbar button:hover {
+      background: #f3b625;
+    }
+
+    .toolbar label {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .toolbar input {
+      width: 55px;
+      padding: 3px 5px;
+      border-radius: 4px;
+      border: 1px solid #555;
+      background: #333;
+      color: #fff;
+      text-align: center;
+    }
+
+    /* ==================== REGLAS DE IMPRESIÓN (SOLO DATOS) ==================== */
+    @media print {
+      body {
+        background-color: transparent !important;
+        padding: 0 !important;
+      }
+      .toolbar {
+        display: none !important;
+      }
+      .page-letter {
+        box-shadow: none !important;
+        margin: 0 !important;
+        background: transparent !important;
+      }
+      /* Hacer 100% invisibles todos los bordes y fondos de la plantilla pero manteniendo sus dimensiones */
+      .page-letter,
+      .page-letter *,
+      .page-letter *::before,
+      .page-letter *::after {
+        border-color: transparent !important;
+        background: transparent !important;
+        box-shadow: none !important;
+      }
+      /* Ocultar textos, logos y seriales que ya vienen preimpresos en el talonario físico */
+      .preprinted {
+        visibility: hidden !important;
+      }
+      /* Asegurar que únicamente los datos a imprimir sean visibles y en negro puro */
+      .print-data {
+        visibility: visible !important;
+        color: #000000 !important;
+      }
+    }
+
+    /* Clase para simular la vista de "Solo Impresión" en pantalla */
+    body.preview-print-only .page-letter,
+    body.preview-print-only .page-letter *,
+    body.preview-print-only .page-letter *::before,
+    body.preview-print-only .page-letter *::after {
+      border-color: transparent !important;
+    }
+    body.preview-print-only .preprinted {
+      visibility: hidden !important;
+    }
+    body.preview-print-only .print-data {
+      visibility: visible !important;
+      color: #000 !important;
+    }
+
+    /* Hoja Tamaño Carta Exacta (215.9mm x 279.4mm) */
+    .page-letter {
+      width: 215.9mm;
+      height: 279.4mm;
+      background: #ffffff;
+      position: relative;
+      /* El padding base + el offset de calibración */
+      padding-top: calc(9mm + var(--offset-y));
+      padding-right: calc(11mm - var(--offset-x));
+      padding-bottom: calc(8mm - var(--offset-y));
+      padding-left: calc(5.5mm + var(--offset-x));
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Estilo general de los datos que va a inyectar tu sistema */
+    .print-data {
+      font-family: "Courier New", Courier, monospace;
+      font-weight: 700;
+      color: #0d47a1; /* En pantalla se ve azul para distinguir de la guía; al imprimir sale negro #000 */
+      letter-spacing: -0.2px;
+    }
+
+    /* ==================== ENCABEZADO ==================== */
+    .header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 2.2mm;
+      height: 31mm;
+    }
+
+    .logo-container {
+      width: 60mm;
+      height: 30mm;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+    }
+
+    .logo-container svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .company-info {
+      flex: 1;
+      text-align: center;
+      padding-right: 4mm;
+      padding-top: 1.5mm;
+    }
+
+    .company-title {
+      font-family: "Arial Black", Impact, Arial, sans-serif;
+      font-size: 24.5pt;
+      font-weight: 900;
+      letter-spacing: 1.2px;
+      color: #6e6e6e;
+      -webkit-text-stroke: 1.3px #111;
+      line-height: 1.05;
+      margin-bottom: 1.5mm;
+      transform: scaleX(1.06);
+      display: inline-block;
+    }
+
+    .company-address {
+      font-size: 8.6pt;
+      font-weight: 700;
+      line-height: 1.28;
+      color: #111;
+      letter-spacing: 0.1px;
+    }
+
+    .company-rif {
+      font-family: "Times New Roman", Times, serif;
+      font-size: 11.5pt;
+      font-weight: 700;
+      margin-top: 1.2mm;
+      letter-spacing: 0.4px;
+    }
+
+    /* ==================== FECHA DE EMISIÓN Y FACTURA N° ==================== */
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2mm;
+      height: 13.5mm;
+    }
+
+    .emission-box {
+      width: 79.5mm;
+      height: 13mm;
+      border: 1.4px solid #111;
+      border-radius: 2.2mm;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .emission-headers {
+      display: grid;
+      grid-template-columns: 38.8mm 11.2mm 10.8mm 1fr;
+      border-bottom: 1.2px solid #111;
+      height: 4.8mm;
+      align-items: center;
+      text-align: center;
+      font-size: 6.7pt;
+      font-weight: 700;
+    }
+
+    .emission-headers > div {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-right: 1.2px solid #111;
+    }
+
+    .emission-headers > div:last-child {
+      border-right: none;
+    }
+
+    .emission-values {
+      display: grid;
+      grid-template-columns: 38.8mm 11.2mm 10.8mm 1fr;
+      flex: 1;
+    }
+
+    .emission-values > div {
+      border-right: 1.2px solid #111;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .emission-values > div:last-child {
+      border-right: none;
+    }
+
+    .lugar-text {
+      font-size: 8.5pt;
+    }
+
+    .sub-ticks {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: flex-end;
+    }
+
+    .sub-ticks span {
+      flex: 1;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9.5pt;
+      position: relative;
+    }
+
+    .sub-ticks span::after {
+      content: "";
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      height: 3.4mm;
+      border-right: 1.1px solid #111;
+    }
+
+    .sub-ticks span:last-child::after {
+      border-right: none;
+    }
+
+    .factura-num-area {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 3mm;
+      padding-left: 18mm;
+      padding-top: 2mm;
+    }
+
+    .factura-label {
+      font-family: "Times New Roman", Georgia, serif;
+      font-size: 11.5pt;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+    }
+
+    .serial-red {
+      font-family: "Courier New", Courier, monospace;
+      font-weight: 700;
+      color: #c62828;
+      font-size: 15pt;
+      letter-spacing: 1px;
+    }
+
+    /* ==================== DATOS DEL CLIENTE ==================== */
+    .client-box {
+      width: 100%;
+      height: 22.8mm;
+      border: 1.4px solid #111;
+      border-radius: 2.8mm;
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 1.8mm;
+      overflow: hidden;
+    }
+
+    .client-row {
+      flex: 1;
+      border-bottom: 1.1px solid #111;
+      display: flex;
+      align-items: center;
+      padding: 0 2mm;
+      font-family: "Arial Narrow", Arial, sans-serif;
+      font-size: 9.2pt;
+      color: #111;
+    }
+
+    .client-row:last-child {
+      border-bottom: none;
+    }
+
+    .client-row-split {
+      display: grid;
+      grid-template-columns: 68mm 62mm 1fr;
+      width: 100%;
+      align-items: center;
+    }
+
+    .client-val {
+      font-size: 9.2pt;
+      margin-left: 2mm;
+    }
+
+    /* ==================== TABLA PRINCIPAL + TOTALES ==================== */
+    .main-table-wrapper {
+      width: 100%;
+      border: 1.4px solid #111;
+      border-top-left-radius: 3mm;
+      border-top-right-radius: 3mm;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .items-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    .col-renglon   { width: 5.65%; }
+    .col-desc      { width: 58.10%; }
+    .col-cant      { width: 5.65%; }
+    .col-precio    { width: 12.80%; }
+    .col-exento    { width: 4.90%; }
+    .col-monto     { width: 12.90%; }
+
+    .items-table thead th {
+      height: 6.2mm;
+      border-bottom: 1.2px solid #111;
+      border-right: 1.1px solid #111;
+      font-family: "Arial Narrow", Arial, sans-serif;
+      font-size: 7.8pt;
+      font-weight: 400;
+      text-align: center;
+      vertical-align: middle;
+      line-height: 1.02;
+      padding: 0.3mm 0.5mm;
+    }
+
+    .items-table thead th:last-child {
+      border-right: none;
+    }
+
+    .th-renglon { font-size: 7.2pt !important; letter-spacing: -0.2px; }
+    .th-cant    { font-size: 7.2pt !important; letter-spacing: -0.3px; }
+    .th-precio  { font-size: 6.8pt !important; }
+
+    .items-table tbody td {
+      height: 5.76mm;
+      border-bottom: 1px solid #222;
+      border-right: 1.1px solid #111;
+      padding: 0 1.5mm;
+      font-size: 8.4pt;
+      vertical-align: middle;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .items-table tbody td:last-child {
+      border-right: none;
+    }
+
+    .items-table tbody tr:last-child td {
+      border-bottom: 1.3px solid #111;
+    }
+
+    .td-center { text-align: center; }
+    .td-right  { text-align: right; }
+
+    /* ==================== SECCIÓN INFERIOR (PAGO / LEY / TOTALES) ==================== */
+    .bottom-section {
+      display: grid;
+      grid-template-columns: 28.05% 29.95% 29.10% 12.90%;
+      width: 100%;
+      height: 29mm;
+    }
+
+    .payment-col {
+      border-right: 1.2px solid #111;
+      padding: 1.3mm 1.8mm 1mm 1.6mm;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      font-size: 6.8pt;
+    }
+
+    .payment-title {
+      font-weight: 700;
+      font-size: 6.8pt;
+      margin-bottom: 0.5mm;
+    }
+
+    .payment-checks {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 6.3pt;
+      white-space: nowrap;
+      margin-bottom: 0.6mm;
+    }
+
+    .check-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.8mm;
+    }
+
+    .checkbox-sq {
+      width: 3.8mm;
+      height: 2.5mm;
+      border: 1.2px solid #111;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 7.5pt;
+      font-style: normal;
+      line-height: 1;
+    }
+
+    .payment-line {
+      display: flex;
+      align-items: flex-end;
+      font-size: 6.8pt;
+      height: 4.2mm;
+    }
+
+    .payment-line > span.preprinted {
+      white-space: nowrap;
+      margin-right: 1mm;
+    }
+
+    .line-fill {
+      flex: 1;
+      border-bottom: 1px solid #111;
+      height: 3.8mm;
+      margin-bottom: 0.5mm;
+      display: flex;
+      align-items: flex-end;
+      padding-left: 1mm;
+      font-size: 7.2pt;
+    }
+
+    .bcv-col {
+      border-right: 1.2px solid #111;
+      padding: 1.6mm 2.2mm 1.2mm 2.5mm;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      font-size: 8.1pt;
+      line-height: 1.28;
+    }
+
+    .inline-line {
+      display: inline-flex;
+      justify-content: center;
+      align-items: flex-end;
+      width: 14mm;
+      border-bottom: 1px solid #111;
+      font-size: 8pt;
+      line-height: 1;
+    }
+
+    .divisas-line {
+      display: flex;
+      align-items: flex-end;
+      font-size: 7.4pt;
+      margin-top: auto;
+    }
+
+    .divisas-line > span.preprinted {
+      white-space: nowrap;
+      margin-right: 0.8mm;
+    }
+
+    .totals-labels-col {
+      border-right: 1.2px solid #111;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .tot-row-label {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 1.5mm;
+      font-size: 7.2pt;
+      font-weight: 700;
+    }
+
+    .h-base  { height: 4.7mm; }
+    .h-otros { height: 5.1mm; }
+    .h-iva   {
+      height: 5.5mm;
+      justify-content: space-between;
+      padding-left: 3mm;
+      padding-right: 1mm;
+    }
+    .h-igtf  {
+      height: 8.0mm;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding-right: 0;
+      text-align: center;
+    }
+    .h-total {
+      flex: 1;
+      font-size: 8.6pt;
+      font-weight: 800;
+      justify-content: flex-end;
+      padding-right: 1.5mm;
+    }
+
+    /* Líneas de llenado para % IVA, Sobre Bs. e IGTF Bs. posicionadas exactamente sobre las rayas del formato */
+    .iva-line-container {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      justify-content: flex-end;
+    }
+
+    .blank-pct {
+      display: inline-block;
+      width: 9mm;
+      text-align: center;
+      border-bottom: 1px solid #111;
+      font-size: 7.5pt;
+    }
+
+    .blank-monto {
+      display: inline-block;
+      width: 16mm;
+      text-align: center;
+      border-bottom: 1px solid #111;
+      font-size: 7.5pt;
+    }
+
+    .igtf-main {
+      font-size: 7.1pt;
+      font-weight: 700;
+      width: 100%;
+      text-align: right;
+      padding-right: 4mm;
+    }
+
+    .igtf-sub {
+      font-size: 5.7pt;
+      font-weight: 700;
+      letter-spacing: -0.1px;
+      margin-top: 0.3mm;
+    }
+
+    .totals-values-col {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .tot-val-cell {
+      border-bottom: 1.1px solid #111;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 0 1.5mm;
+      font-size: 8.4pt;
+    }
+
+    .tot-val-cell:last-child {
+      border-bottom: none;
+      flex: 1;
+      font-size: 9pt;
+      font-weight: 900;
+    }
+
+    /* ==================== PIE DE IMPRENTA Y N° DE CONTROL ==================== */
+    .footer-area {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-top: 1.4mm;
+    }
+
+    .imprenta-left {
+      width: 147mm;
+    }
+
+    .imprenta-box {
+      width: 100%;
+      height: 8.6mm;
+      border: 1.2px solid #111;
+      border-radius: 1.4mm;
+      display: grid;
+      grid-template-columns: 21.5mm 65.5mm 14mm 20.2mm 1fr;
+      overflow: hidden;
+    }
+
+    .imp-col {
+      border-right: 1.1px solid #111;
+      height: 100%;
+    }
+
+    .imp-col:last-child {
+      border-right: none;
+    }
+
+    .imp-logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      padding: 0.5mm 1mm;
+    }
+
+    .imp-logo-text {
+      font-family: Arial, sans-serif;
+      font-size: 7.3pt;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      margin-left: 2mm;
+      margin-top: 1.2mm;
+    }
+
+    .imp-logo-text small { font-size: 4.5pt; }
+
+    .imp-address {
+      font-family: "Arial Narrow", Arial, sans-serif;
+      font-size: 5.3pt;
+      font-weight: 700;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      line-height: 1.18;
+      padding: 0 0.6mm;
+    }
+
+    .imp-split-col {
+      display: flex;
+      flex-direction: column;
+      text-align: center;
+    }
+
+    .imp-split-top {
+      height: 3.1mm;
+      border-bottom: 1px solid #111;
+      font-size: 5.5pt;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .imp-split-bottom {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: "Arial Narrow", Arial, sans-serif;
+      font-size: 5.6pt;
+      font-weight: 700;
+      line-height: 1.08;
+    }
+
+    .imp-date-val { font-size: 6.5pt; }
+
+    .copies-legend {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.8mm 16mm 0 18mm;
+      font-size: 6.7pt;
+      font-weight: 700;
+      letter-spacing: 0.1px;
+    }
+
+    .control-right {
+      flex: 1;
+      padding-left: 3.5mm;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+    }
+
+    .control-title {
+      font-size: 8.8pt;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      margin-bottom: 1.2mm;
+    }
+
+    .control-prefix {
+      font-family: "Arial Narrow", Arial, sans-serif;
+      font-size: 16pt;
+      font-weight: 400;
+      letter-spacing: 0.5px;
+      line-height: 1;
+    }
+
+    /* ==================== CALIBRACIÓN INDEPENDIENTE POR SECCIÓN ==================== */
+    /* Solo se desplaza el dato impreso (.print-data). Los rótulos preimpresos quedan fijos. */
+    .top-bar .print-data,
+    .client-box .print-data,
+    .payment-col .print-data,
+    .bcv-col .print-data,
+    .totals-labels-col .print-data,
+    .totals-values-col {
+      position: relative;
+    }
+
+    .top-bar .print-data {
+      left: var(--cal-emision-x);
+      top: var(--cal-emision-y);
+    }
+
+    .client-box .print-data {
+      left: var(--cal-cliente-x);
+      top: var(--cal-cliente-y);
+    }
+
+    .payment-col .print-data {
+      left: var(--cal-pago-x);
+      top: var(--cal-pago-y);
+    }
+
+    .bcv-col .print-data {
+      left: var(--cal-bcv-x);
+      top: var(--cal-bcv-y);
+    }
+
+    .totals-labels-col .print-data {
+      left: var(--cal-totlabels-x);
+      top: var(--cal-totlabels-y);
+    }
+
+    .totals-values-col {
+      left: var(--cal-totvals-x);
+      top: var(--cal-totvals-y);
+    }
+
+    /* El texto de cada celda de datos se envuelve en .cal-cell para moverlo sin arrastrar los bordes ni los encabezados */
+    .items-table .cal-cell {
+      display: inline-block;
+      width: 100%;
+    }
+
+    .items-table tbody td:nth-child(1) .cal-cell { transform: translate(var(--cal-renglon-x), var(--cal-renglon-y)); }
+    .items-table tbody td:nth-child(2) .cal-cell { transform: translate(var(--cal-desc-x), var(--cal-desc-y)); }
+    .items-table tbody td:nth-child(3) .cal-cell { transform: translate(var(--cal-cant-x), var(--cal-cant-y)); }
+    .items-table tbody td:nth-child(4) .cal-cell { transform: translate(var(--cal-precio-x), var(--cal-precio-y)); }
+    .items-table tbody td:nth-child(5) .cal-cell { transform: translate(var(--cal-exento-x), var(--cal-exento-y)); }
+    .items-table tbody td:nth-child(6) .cal-cell { transform: translate(var(--cal-monto-x), var(--cal-monto-y)); }
+
+    /* ==================== PANEL DE CALIBRACIÓN (NO SE IMPRIME) ==================== */
+    .cal-toggle {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      z-index: 500;
+      background: #E1A413;
+      color: #111;
+      border: none;
+      border-radius: 8px;
+      padding: 11px 16px;
+      font: 700 14px Arial, sans-serif;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, .35);
+    }
+
+    .cal-toggle:hover { background: #f3b625; }
+
+    .cal-panel {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 320px;
+      max-width: 92vw;
+      height: 100vh;
+      z-index: 600;
+      background: #1b1b1b;
+      color: #eee;
+      display: flex;
+      flex-direction: column;
+      box-shadow: -6px 0 22px rgba(0, 0, 0, .45);
+      transform: translateX(105%);
+      transition: transform .22s ease;
+    }
+
+    .cal-panel.open { transform: translateX(0); }
+
+    .cal-panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 13px 16px;
+      background: #242424;
+      border-bottom: 1px solid #3a3a3a;
+      font: 700 14px Arial, sans-serif;
+    }
+
+    .cal-panel-head button {
+      background: none;
+      border: none;
+      color: #ddd;
+      font-size: 22px;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .cal-sections {
+      overflow-y: auto;
+      flex: 1 1 auto;
+      padding: 6px 0;
+    }
+
+    .cal-sections a {
+      display: block;
+      padding: 9px 16px;
+      color: #c9c9c9;
+      text-decoration: none;
+      font: 13px Arial, sans-serif;
+      border-left: 3px solid transparent;
+      cursor: pointer;
+    }
+
+    .cal-sections a:hover { background: #2c2c2c; color: #fff; }
+
+    .cal-sections a.active {
+      background: #2e2e2e;
+      color: #E1A413;
+      border-left-color: #E1A413;
+      font-weight: 700;
+    }
+
+    .cal-controls {
+      flex: 0 0 auto;
+      border-top: 1px solid #3a3a3a;
+      padding: 12px 16px 16px;
+    }
+
+    .cal-current {
+      font: 700 12px Arial, sans-serif;
+      color: #E1A413;
+      margin-bottom: 10px;
+      min-height: 15px;
+    }
+
+    .cal-axis { margin-bottom: 10px; }
+
+    .cal-axis-label {
+      display: block;
+      font: 700 11px Arial, sans-serif;
+      color: #9d9d9d;
+      letter-spacing: .4px;
+      margin-bottom: 5px;
+      text-transform: uppercase;
+    }
+
+    .cal-btns {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .cal-btns button {
+      background: #E1A413;
+      color: #111;
+      border: none;
+      border-radius: 4px;
+      padding: 7px 6px;
+      font: 700 11px Arial, sans-serif;
+      cursor: pointer;
+      flex: 1 1 0;
+      white-space: nowrap;
+    }
+
+    .cal-btns button:hover { background: #f3b625; }
+    .cal-btns button:active { background: #c89210; }
+
+    .cal-btns output {
+      flex: 0 0 58px;
+      text-align: center;
+      font: 700 12px Arial, sans-serif;
+      color: #E1A413;
+      background: #2a2a2a;
+      border-radius: 4px;
+      padding: 7px 2px;
+    }
+
+    .cal-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .cal-actions button {
+      flex: 1;
+      background: #3a3a3a;
+      color: #eee;
+      border: none;
+      border-radius: 4px;
+      padding: 8px;
+      font: 700 12px Arial, sans-serif;
+      cursor: pointer;
+    }
+
+    .cal-actions button:hover { background: #4a4a4a; }
+
+    .cal-import {
+      width: 100%;
+      margin-top: 10px;
+      background: #3a3a3a;
+      color: #eee;
+      border: none;
+      border-radius: 6px;
+      padding: 10px;
+      font: 700 13px Arial, sans-serif;
+      cursor: pointer;
+    }
+
+    .cal-import:hover { background: #4a4a4a; }
+
+    .cal-msg {
+      margin-top: 8px;
+      font: 11px/1.35 Arial, sans-serif;
+      color: #7fd18b;
+      min-height: 13px;
+    }
+
+    .cal-save {
+      width: 100%;
+      margin-top: 10px;
+      background: #E1A413;
+      color: #111;
+      border: none;
+      border-radius: 6px;
+      padding: 11px;
+      font: 700 14px Arial, sans-serif;
+      cursor: pointer;
+    }
+
+    .cal-save:hover { background: #f3b625; }
+
+    .cal-hint {
+      margin-top: 9px;
+      font: 11px/1.35 Arial, sans-serif;
+      color: #9a9a9a;
+    }
+
+    .cal-target {
+      outline: 2px dashed #E1A413 !important;
+      outline-offset: -1px;
+    }
+
+    /* ==================== PANEL DE DATOS (NO SE IMPRIME) ==================== */
+    .data-toggle {
+      position: fixed;
+      right: 16px;
+      bottom: 68px;
+      z-index: 500;
+      background: #E1A413;
+      color: #111;
+      border: none;
+      border-radius: 8px;
+      padding: 11px 16px;
+      font: 700 14px Arial, sans-serif;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, .35);
+    }
+
+    .data-toggle:hover { background: #f3b625; }
+
+    .data-panel {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 460px;
+      max-width: 96vw;
+      height: 100vh;
+      z-index: 600;
+      background: #1b1b1b;
+      color: #eee;
+      display: flex;
+      flex-direction: column;
+      box-shadow: -6px 0 22px rgba(0, 0, 0, .45);
+      transform: translateX(105%);
+      transition: transform .22s ease;
+    }
+
+    .data-panel.open { transform: translateX(0); }
+
+    /* Desplaza la hoja para dejar visible la vista previa completa */
+    body.data-open { padding-right: 460px; }
+
+    @media (max-width: 1300px) {
+      body.data-open { padding-right: 0; }
+    }
+
+    .data-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 13px 16px;
+      background: #242424;
+      border-bottom: 1px solid #3a3a3a;
+      font: 700 14px Arial, sans-serif;
+    }
+
+    .data-head button {
+      background: none;
+      border: none;
+      color: #ddd;
+      font-size: 22px;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .data-body {
+      flex: 1 1 auto;
+      overflow-y: auto;
+      padding: 14px 16px 18px;
+    }
+
+    .data-foot {
+      flex: 0 0 auto;
+      border-top: 1px solid #3a3a3a;
+      padding: 11px 16px;
+      display: flex;
+      gap: 8px;
+    }
+
+    .data-foot button {
+      flex: 1;
+      border: none;
+      border-radius: 6px;
+      padding: 10px 6px;
+      font: 700 12px Arial, sans-serif;
+      cursor: pointer;
+    }
+
+    .data-foot .d-print { background: #3a3a3a; color: #eee; }
+    .data-foot .d-print:hover { background: #4a4a4a; }
+    .data-foot .d-save { background: #E1A413; color: #111; }
+    .data-foot .d-save:hover { background: #f3b625; }
+    .data-foot .d-clear { background: #5a2b2b; color: #f2d7d7; }
+    .data-foot .d-clear:hover { background: #743636; }
+
+    .d-group {
+      margin-bottom: 16px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid #303030;
+    }
+
+    .d-group:last-child { border-bottom: none; }
+
+    .d-group h4 {
+      margin-bottom: 8px;
+      font: 700 11px Arial, sans-serif;
+      letter-spacing: .6px;
+      text-transform: uppercase;
+      color: #E1A413;
+    }
+
+    .d-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .d-field {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      min-width: 0;
+      font: 11px Arial, sans-serif;
+      color: #a9a9a9;
+    }
+
+    .d-field.full { grid-column: 1 / -1; }
+
+    .d-field input,
+    .d-field textarea {
+      width: 100%;
+      background: #2a2a2a;
+      border: 1px solid #444;
+      border-radius: 4px;
+      color: #eee;
+      padding: 6px 7px;
+      font: 12px Arial, sans-serif;
+    }
+
+    .d-field input:focus,
+    .d-field textarea:focus {
+      outline: 1px solid #E1A413;
+      border-color: #E1A413;
+    }
+
+    .d-field textarea {
+      resize: vertical;
+      min-height: 42px;
+    }
+
+    .d-checks {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-top: 2px;
+      font: 12px Arial, sans-serif;
+      color: #ddd;
+    }
+
+    .d-checks label {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+    }
+
+    .d-rows {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .d-row {
+      display: grid;
+      grid-template-columns: 40px minmax(0, 1fr) 42px 62px 22px 66px;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .d-row .d-ren {
+      text-align: center;
+      font-weight: 700;
+    }
+
+    .d-row input {
+      min-width: 0;
+      background: #2a2a2a;
+      border: 1px solid #3f3f3f;
+      border-radius: 3px;
+      color: #eee;
+      padding: 4px 5px;
+      font: 11px Arial, sans-serif;
+    }
+
+    .d-row input:focus {
+      outline: 1px solid #E1A413;
+      border-color: #E1A413;
+    }
+
+    .d-row input[type="checkbox"] { width: 14px; height: 14px; padding: 0; }
+
+    .d-row .d-monto {
+      font: 700 11px Arial, sans-serif;
+      color: #E1A413;
+      text-align: right;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .d-rows-head {
+      display: grid;
+      grid-template-columns: 40px minmax(0, 1fr) 42px 62px 22px 66px;
+      gap: 4px;
+      margin-bottom: 4px;
+      font: 700 9px Arial, sans-serif;
+      letter-spacing: .3px;
+      color: #8b8b8b;
+      text-transform: uppercase;
+    }
+
+    .d-rows-head span:nth-child(1) { text-align: center; }
+    .d-rows-head span:nth-child(3),
+    .d-rows-head span:nth-child(4),
+    .d-rows-head span:nth-child(6) { text-align: right; }
+    .d-rows-head span:nth-child(5) { text-align: center; }
+
+    .data-hint {
+      margin-top: 8px;
+      font: 10px/1.35 Arial, sans-serif;
+      color: #8e8e8e;
+    }
+
+    @media print {
+      .cal-panel,
+      .cal-toggle,
+      .data-panel,
+      .data-toggle { display: none !important; }
+      .cal-target { outline: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- BARRA DE CALIBRACIÓN Y PRUEBA (NO SE IMPRIME) -->
+  <div class="toolbar">
+    <button type="button" onclick="document.body.classList.toggle('preview-print-only')">
+      Alternar Vista: Guía / Solo Impresión
+    </button>
+    <label>
+      Offset X (mm):
+      <input type="number" step="0.5" value="0" oninput="document.documentElement.style.setProperty('--offset-x', this.value + 'mm')" />
+    </label>
+    <label>
+      Offset Y (mm):
+      <input type="number" step="0.5" value="0" oninput="document.documentElement.style.setProperty('--offset-y', this.value + 'mm')" />
+    </label>
+    <button type="button" onclick="window.print()">Imprimir (Ctrl+P)</button>
+  </div>
+
+  <!-- ==================== PANEL DE CALIBRACIÓN POR SECCIÓN (NO SE IMPRIME) ==================== -->
+  <button type="button" class="cal-toggle" id="calToggle" title="Abrir calibración">⚙ Calibrar</button>
+
+  <aside class="cal-panel" id="calPanel" aria-hidden="false">
+    <div class="cal-panel-head">
+      <strong>Calibración por sección</strong>
+      <button type="button" id="calClose" title="Cerrar panel">×</button>
+    </div>
+
+    <nav class="cal-sections" id="calSections"></nav>
+
+    <div class="cal-controls" id="calControls">
+      <div class="cal-current" id="calCurrent">Selecciona una sección</div>
+
+      <div class="cal-axis">
+        <span class="cal-axis-label">Eje X (mm)</span>
+        <div class="cal-btns">
+          <button type="button" data-axis="x" data-delta="-0.5">← 0.5</button>
+          <button type="button" data-axis="x" data-delta="-0.1">← 0.1</button>
+          <output id="calValX">0.0</output>
+          <button type="button" data-axis="x" data-delta="0.1">0.1 →</button>
+          <button type="button" data-axis="x" data-delta="0.5">0.5 →</button>
+        </div>
+      </div>
+
+      <div class="cal-axis">
+        <span class="cal-axis-label">Eje Y (mm)</span>
+        <div class="cal-btns">
+          <button type="button" data-axis="y" data-delta="-0.5">↑ 0.5</button>
+          <button type="button" data-axis="y" data-delta="-0.1">↑ 0.1</button>
+          <output id="calValY">0.0</output>
+          <button type="button" data-axis="y" data-delta="0.1">0.1 ↓</button>
+          <button type="button" data-axis="y" data-delta="0.5">0.5 ↓</button>
+        </div>
+      </div>
+
+      <div class="cal-actions">
+        <button type="button" id="calResetSection">Reset sección</button>
+        <button type="button" id="calResetAll">Reset todo</button>
+      </div>
+
+      <button type="button" class="cal-import" id="calImport">📂 Cargar calibración desde HTML</button>
+      <input type="file" id="calFile" accept=".html,text/html" hidden />
+      <div class="cal-msg" id="calMsg"></div>
+
+      <button type="button" class="cal-save" id="calSave">💾 Guardar imp.html</button>
+      <p class="cal-hint">Mueve solo el dato impreso; los rótulos y encabezados preimpresos quedan fijos. Carga un HTML calibrado (ej. <b>imp3.html</b>) para recuperar sus valores. Guardar genera <b>imp.html</b> con los valores fijos y sin panel.</p>
+    </div>
+  </aside>
+
+  <!-- ==================== PANEL DE DATOS A IMPRIMIR (NO SE IMPRIME) ==================== -->
+  <button type="button" class="data-toggle" id="dataToggle" title="Abrir datos">📝 Datos</button>
+
+  <aside class="data-panel" id="dataPanel">
+    <div class="data-head">
+      <strong>Datos de impresión</strong>
+      <button type="button" id="dataClose" title="Cerrar panel">×</button>
+    </div>
+
+    <div class="data-body">
+      <div class="d-group">
+        <h4>Emisión</h4>
+        <div class="d-grid">
+          <label class="d-field full">Lugar de emisión
+            <input id="d-lugar" type="text" autocomplete="off" placeholder="PUERTO ORDAZ" />
+          </label>
+          <label class="d-field">Día (DD)
+            <input id="d-dia" type="text" maxlength="2" inputmode="numeric" placeholder="17" />
+          </label>
+          <label class="d-field">Mes (MM)
+            <input id="d-mes" type="text" maxlength="2" inputmode="numeric" placeholder="10" />
+          </label>
+          <label class="d-field">Año (AAAA)
+            <input id="d-anio" type="text" maxlength="4" inputmode="numeric" placeholder="2026" />
+          </label>
+        </div>
+      </div>
+
+      <div class="d-group">
+        <h4>Cliente</h4>
+        <div class="d-grid">
+          <label class="d-field full">Nombre o razón social
+            <input id="d-nombre" type="text" autocomplete="off" placeholder="SUMINISTROS INDUSTRIALES CARONÍ, C.A." />
+          </label>
+          <label class="d-field full">Domicilio fiscal
+            <textarea id="d-domicilio" rows="2" placeholder="ZONA INDUSTRIAL UNARE II, CALLE NEVERÍ..."></textarea>
+          </label>
+          <label class="d-field">R.I.F. ó C.I.
+            <input id="d-rif" type="text" autocomplete="off" placeholder="J-40125896-3" />
+          </label>
+          <label class="d-field">Teléfono
+            <input id="d-telefono" type="text" autocomplete="off" placeholder="(0286) 951.44.12" />
+          </label>
+          <label class="d-field full">Condiciones de pago
+            <input id="d-cond" type="text" autocomplete="off" placeholder="CONTADO" />
+          </label>
+        </div>
+      </div>
+
+      <div class="d-group">
+        <h4>Renglones</h4>
+        <div class="d-rows-head">
+          <span>#</span><span>Descripción</span><span>Cant.</span><span>Precio</span><span>E</span><span>Monto</span>
+        </div>
+        <div class="d-rows" id="d-rows"></div>
+        <p class="data-hint">Escribe el N° de renglón y el Monto a mano; no se generan ni se calculan.</p>
+      </div>
+
+      <div class="d-group">
+        <h4>Forma de pago</h4>
+        <div class="d-checks">
+          <label><input type="checkbox" id="d-efectivo" /> Efectivo</label>
+          <label><input type="checkbox" id="d-debito" /> Tarj. de Débito</label>
+          <label><input type="checkbox" id="d-credito" /> Tarj. de Crédito</label>
+        </div>
+        <div class="d-grid" style="margin-top: 8px;">
+          <label class="d-field full">Transferencia
+            <input id="d-transferencia" type="text" autocomplete="off" placeholder="#88492014 (Bs. 37.740,00)" />
+          </label>
+          <label class="d-field full">Pago móvil
+            <input id="d-movil" type="text" autocomplete="off" placeholder="—" />
+          </label>
+          <label class="d-field full">Banco
+            <input id="d-banco" type="text" autocomplete="off" placeholder="BANESCO BANCO UNIVERSAL" />
+          </label>
+        </div>
+      </div>
+
+      <div class="d-group">
+        <h4>Ley IVA / BCV</h4>
+        <div class="d-grid">
+          <label class="d-field">Tasa de cambio
+            <input id="d-tasa" type="text" autocomplete="off" inputmode="decimal" placeholder="" />
+          </label>
+          <label class="d-field">Monto en divisas
+            <input id="d-divisas" type="text" autocomplete="off" placeholder="" />
+          </label>
+        </div>
+      </div>
+
+      <div class="d-group">
+        <h4>Totales</h4>
+        <div class="d-grid">
+          <label class="d-field">I.V.A. (%)
+            <input id="d-iva-pct" type="text" autocomplete="off" inputmode="decimal" placeholder="" />
+          </label>
+          <label class="d-field">Base I.V.A. (SOBRE Bs.)
+            <input id="d-iva-base" type="text" autocomplete="off" inputmode="decimal" placeholder="" />
+          </label>
+          <label class="d-field">Base IGTF (3%)
+            <input id="d-igtf-base" type="text" autocomplete="off" inputmode="decimal" placeholder="" />
+          </label>
+          <label class="d-field">BASE Bs.
+            <input id="d-base" type="text" autocomplete="off" inputmode="decimal" placeholder="" />
+          </label>
+          <label class="d-field">OTROS Bs.
+            <input id="d-otros" type="text" autocomplete="off" inputmode="decimal" placeholder="" />
+          </label>
+          <label class="d-field">I.V.A. Bs.
+            <input id="d-iva" type="text" autocomplete="off" inputmode="decimal" placeholder="" />
+          </label>
+          <label class="d-field">IGTF Bs.
+            <input id="d-igtf" type="text" autocomplete="off" inputmode="decimal" placeholder="" />
+          </label>
+          <label class="d-field full">TOTAL A PAGAR Bs.
+            <input id="d-total" type="text" autocomplete="off" inputmode="decimal" placeholder="" />
+          </label>
+        </div>
+        <p class="data-hint">Todos los montos y totales se imprimen tal como los escribas. No hay cálculo automático.</p>
+      </div>
+
+      <p class="data-hint">Los datos quedan guardados en este navegador. <b>Guardar HTML</b> crea una copia fija, sin panel, lista para imprimir.</p>
+    </div>
+
+    <div class="data-foot">
+      <button type="button" class="d-clear" id="d-clear">🧹 Limpiar</button>
+      <button type="button" class="d-print" id="d-print">🖨 Imprimir</button>
+      <button type="button" class="d-save" id="d-save">💾 Guardar HTML</button>
+    </div>
+  </aside>
+
+  <div class="page-letter">
+    <!-- ==================== ENCABEZADO (PREIMPRESO) ==================== -->
+    <header class="header preprinted">
+      <div class="logo-container">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="550 1820 3920 1350" preserveAspectRatio="xMinYMid meet">
+          <defs>
+            <style>
+              .sg-dark { fill: #414040; }
+              .sg-gold { fill: #E1A413; }
+              .sg-gold-alt { fill: #E4A924; }
+              .sg-charcoal { fill: #4B4949; }
+              .sg-groups { font-family: 'Arial Black', Arial, sans-serif; font-size: 195px; font-weight: 900; fill: #E1A413; }
+              .sg-ca { font-family: 'Arial Black', Arial, sans-serif; font-size: 175px; font-weight: 900; fill: #414040; }
+              .sg-rif { font-family: Arial, Helvetica, sans-serif; font-size: 96px; font-weight: 700; fill: #4B4949; letter-spacing: 24px; }
+            </style>
+          </defs>
+          <polygon class="sg-dark" points="1126,3111 624,2785 624,2174 1126,1850 1632,2174 1632,2660 1536,2596 1536,2228 1126,1964 720,2228 720,2730 1126,2994" />
+          <polygon class="sg-gold" points="1126,3111 1632,2785 1632,2720 1536,2655 1536,2730 1126,2994" />
+          <path class="sg-dark" d="M 1094,2256 L 840,2256 C 795,2256 778,2278 778,2320 L 778,2480 C 778,2525 798,2546 842,2546 L 1005,2546 L 1005,2648 L 818,2648 L 764,2738 L 1032,2738 C 1076,2738 1096,2714 1096,2670 L 1096,2512 C 1096,2468 1074,2448 1030,2448 L 868,2448 L 868,2352 L 1094,2352 Z" />
+          <path class="sg-dark" d="M 1474,2256 L 1134,2256 L 1134,2842 L 1474,2632 L 1474,2448 L 1310,2448 L 1265,2538 L 1382,2538 L 1382,2582 L 1222,2680 L 1222,2352 L 1474,2352 Z" />
+          <rect class="sg-dark" x="1798" y="1995" width="16" height="965" rx="6" />
+          <path class="sg-dark" d="M 2380,2130 L 2015,2130 C 1960,2130 1938,2156 1938,2205 L 1938,2305 C 1938,2355 1962,2380 2018,2380 L 2285,2380 L 2285,2442 L 1942,2442 L 1942,2525 L 2312,2525 C 2372,2525 2396,2498 2396,2442 L 2396,2342 C 2396,2290 2372,2268 2312,2268 L 2048,2268 L 2048,2210 L 2380,2210 Z" />
+          <path class="sg-dark" d="M 2462,2525 L 2462,2130 L 2835,2130 C 2892,2130 2918,2158 2918,2212 L 2918,2328 C 2918,2382 2892,2410 2835,2410 L 2572,2410 L 2572,2525 Z M 2572,2212 L 2572,2328 L 2808,2328 L 2808,2212 Z" />
+          <path class="sg-dark" d="M 2988,2525 L 2988,2130 L 3398,2130 L 3398,2210 L 3098,2210 L 3098,2286 L 3365,2286 L 3365,2364 L 3098,2364 L 3098,2444 L 3398,2444 L 3398,2525 Z" />
+          <path class="sg-dark" d="M 3468,2525 L 3468,2130 L 3878,2130 L 3878,2210 L 3578,2210 L 3578,2286 L 3845,2286 L 3845,2364 L 3578,2364 L 3578,2444 L 3878,2444 L 3878,2525 Z" />
+          <path class="sg-dark" d="M 3948,2525 L 3948,2130 L 4310,2130 C 4378,2130 4408,2168 4408,2235 L 4408,2420 C 4408,2488 4378,2525 4310,2525 Z M 4058,2212 L 4058,2444 L 4295,2444 L 4295,2212 Z" />
+          <text class="sg-groups" x="1932" y="2768" textLength="1835" lengthAdjust="spacing">GROUPS</text>
+          <text class="sg-ca" x="3952" y="2768" letter-spacing="18">C.A</text>
+          <rect class="sg-gold-alt" x="1946" y="2908" width="510" height="11" />
+          <text class="sg-rif" x="2525" y="2946">RIF J-508443900</text>
+          <rect class="sg-gold-alt" x="3878" y="2908" width="510" height="11" />
+        </svg>
+      </div>
+
+      <div class="company-info">
+        <div class="company-title">SPEED GROUPS C.A.</div>
+        <div class="company-address">
+          AV CARACAS EDIF ROCAS DEL ORINOCO PISO 1 LOCAL S/N SECTOR UD-323,<br />
+          MANZANA 80, PARCELA 04 CIUDAD GUAYANA BOLIVAR<br />
+          ZONA POSTAL 8050 Telf.: (0412) 782.29.20 - Correo: speedgroupsca@gmail.com
+        </div>
+        <div class="company-rif">RIF.: J-50844390-0</div>
+      </div>
+    </header>
+
+    <!-- ==================== FECHA Y FACTURA N° ==================== -->
+    <section class="top-bar">
+      <div class="emission-box">
+        <div class="emission-headers preprinted">
+          <div>LUGAR Y FECHA DE EMISIÓN</div>
+          <div>DIA</div>
+          <div>MES</div>
+          <div>AÑO</div>
+        </div>
+        <div class="emission-values">
+          <div><span class="lugar-text print-data">PUERTO ORDAZ</span></div>
+          <div>
+            <div class="sub-ticks">
+              <span class="print-data">1</span>
+              <span class="print-data">3</span>
+            </div>
+          </div>
+          <div>
+            <div class="sub-ticks">
+              <span class="print-data">1</span>
+              <span class="print-data">0</span>
+            </div>
+          </div>
+          <div>
+            <div class="sub-ticks">
+              <span class="print-data">2</span>
+              <span class="print-data">0</span>
+              <span class="print-data">2</span>
+              <span class="print-data">6</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- El N° de Factura ya viene preimpreso en el talonario -->
+      <div class="factura-num-area preprinted">
+        <span class="factura-label">FACTURA Nº.</span>
+        <span class="serial-red">00014</span>
+      </div>
+    </section>
+
+    <!-- ==================== DATOS DEL CLIENTE ==================== -->
+    <section class="client-box">
+      <div class="client-row">
+        <span class="preprinted">Nombre o Razón Social:</span>
+        <span class="client-val print-data">SUMINISTROS INDUSTRIALES CARONÍ, C.A.</span>
+      </div>
+      <div class="client-row">
+        <span class="preprinted">Domicilio Fiscal:</span>
+        <span class="client-val print-data">ZONA INDUSTRIAL UNARE II, CALLE NEVERÍ, GALPÓN NRO. 14, PUERTO ORDAZ - EDO. BOLÍVAR</span>
+      </div>
+      <div class="client-row">
+        <div class="client-row-split">
+          <div>
+            <span class="preprinted">R.I.F. ó C.I.:</span>
+            <span class="client-val print-data">J-40125896-3</span>
+          </div>
+          <div>
+            <span class="preprinted">Teléfono:</span>
+            <span class="client-val print-data">(0286) 951.44.12</span>
+          </div>
+          <div>
+            <span class="preprinted">Condiciones de Pago:</span>
+            <span class="client-val print-data">CONTADO</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TABLA PRINCIPAL + TOTALES ==================== -->
+    <section class="main-table-wrapper">
+      <table class="items-table">
+        <colgroup>
+          <col class="col-renglon" />
+          <col class="col-desc" />
+          <col class="col-cant" />
+          <col class="col-precio" />
+          <col class="col-exento" />
+          <col class="col-monto" />
+        </colgroup>
+        <thead class="preprinted">
+          <tr>
+            <th class="th-renglon">RENGLÓN</th>
+            <th>DESCRIPCION</th>
+            <th class="th-cant">CANTIDAD</th>
+            <th class="th-precio">PRECIO DE<br />VENTA UNITARIO</th>
+            <th>( E )</th>
+            <th>MONTO</th>
+          </tr>
+        </thead>
+        <tbody class="print-data">
+          <!-- 24 renglones idénticos al físico -->
+          <tr>
+            <td class="td-center">01</td>
+            <td>SERVICIO DE MANTENIMIENTO PREVENTIVO SERVIDOR DELL POWEREDGE</td>
+            <td class="td-center">1</td>
+            <td class="td-right">6.500,00</td>
+            <td class="td-center"></td>
+            <td class="td-right">6.500,00</td>
+          </tr>
+          <tr>
+            <td class="td-center">02</td>
+            <td>SWITCH GIGABIT ETHERNET 24 PUERTOS TP-LINK TL-SG1024D</td>
+            <td class="td-center">2</td>
+            <td class="td-right">4.250,00</td>
+            <td class="td-center"></td>
+            <td class="td-right">8.500,00</td>
+          </tr>
+          <tr>
+            <td class="td-center">03</td>
+            <td>BOBINA DE CABLE UTP CAT6 100% COBRE (305 METROS)</td>
+            <td class="td-center">1</td>
+            <td class="td-right">5.800,00</td>
+            <td class="td-center"></td>
+            <td class="td-right">5.800,00</td>
+          </tr>
+          <tr>
+            <td class="td-center">04</td>
+            <td>UNIDAD DE ESTADO SÓLIDO (SSD) KINGSTON NV2 1TB M.2 NVME</td>
+            <td class="td-center">4</td>
+            <td class="td-right">2.950,00</td>
+            <td class="td-center"></td>
+            <td class="td-right">11.800,00</td>
+          </tr>
+          <tr>
+            <td class="td-center">05</td>
+            <td>MEMORIA RAM DDR4 16GB 3200MHZ CORSAIR VENGEANCE</td>
+            <td class="td-center">4</td>
+            <td class="td-right">1.850,00</td>
+            <td class="td-center"></td>
+            <td class="td-right">7.400,00</td>
+          </tr>
+          <tr>
+            <td class="td-center">06</td>
+            <td>UPS INTERACTIVO APC 1000VA / 600W 8 TOMAS AVR</td>
+            <td class="td-center">2</td>
+            <td class="td-right">5.100,00</td>
+            <td class="td-center"></td>
+            <td class="td-right">10.200,00</td>
+          </tr>
+          <tr>
+            <td class="td-center">07</td>
+            <td>PACK CONECTORES RJ45 CAT6 BLINDADOS (BOLSA 100 UNIDADES)</td>
+            <td class="td-center">2</td>
+            <td class="td-right">650,00</td>
+            <td class="td-center"></td>
+            <td class="td-right">1.300,00</td>
+          </tr>
+          <tr>
+            <td class="td-center">08</td>
+            <td>MANUAL TÉCNICO DE REDES Y CERTIFICADO DE GARANTÍA IMPRESO</td>
+            <td class="td-center">1</td>
+            <td class="td-right">500,00</td>
+            <td class="td-center">X</td>
+            <td class="td-right">500,00</td>
+          </tr>
+          <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        </tbody>
+      </table>
+
+      <!-- Bloque Inferior integrado a la tabla -->
+      <div class="bottom-section">
+        <!-- Columna 1: Forma de Pago -->
+        <div class="payment-col">
+          <div class="payment-title preprinted">FORMA DE PAGO:</div>
+          <div class="payment-checks">
+            <span class="check-item"><span class="preprinted">Efectivo</span> <i class="checkbox-sq"><span class="print-data"></span></i></span>
+            <span class="check-item"><span class="preprinted">Tarj. de Débito</span> <i class="checkbox-sq"><span class="print-data"></span></i></span>
+            <span class="check-item"><span class="preprinted">Tarj. de Crédito</span> <i class="checkbox-sq"><span class="print-data"></span></i></span>
+          </div>
+          <div class="payment-line">
+            <span class="preprinted">Transferencia</span>
+            <div class="line-fill print-data"></div>
+          </div>
+          <div class="payment-line">
+            <span class="preprinted">Pago Móvil</span>
+            <div class="line-fill print-data"></div>
+          </div>
+          <div class="payment-line">
+            <span class="preprinted">Banco</span>
+            <div class="line-fill print-data"></div>
+          </div>
+        </div>
+
+        <!-- Columna 2: Ley del IVA / BCV -->
+        <div class="bcv-col">
+          <div class="bcv-text">
+            <span class="preprinted">Para cumplir con el Art. 25 de la ley del</span><br />
+            <span class="preprinted">IVA, se expresan los montos en Bs.</span><br />
+            <span class="preprinted">aplicando la tasa de cambio</span><span class="inline-line print-data"></span><br />
+            <span class="preprinted">establecida por el BCV.</span>
+          </div>
+          <div class="divisas-line">
+            <span class="preprinted">Monto Recibido en Divisas:</span>
+            <div class="line-fill print-data"></div>
+          </div>
+        </div>
+
+        <!-- Columna 3: Etiquetas de Totales -->
+        <div class="totals-labels-col">
+          <div class="tot-row-label h-base preprinted">BASE Bs.</div>
+          <div class="tot-row-label h-otros preprinted">OTROS Bs.</div>
+          <div class="tot-row-label h-iva">
+            <div class="iva-line-container">
+              <span class="preprinted">I.V.A.</span>
+              <span class="blank-pct print-data"></span>
+              <span class="preprinted">% SOBRE Bs.</span>
+              <span class="blank-monto print-data"></span>
+            </div>
+          </div>
+          <div class="tot-row-label h-igtf">
+            <div class="igtf-main">
+              <span class="preprinted">3% IGTF Bs.</span>
+              <span class="blank-monto print-data"></span>
+            </div>
+            <div class="igtf-sub preprinted">S/Prov. SNAT/2022/000013 del 03/03/2022</div>
+          </div>
+          <div class="tot-row-label h-total preprinted">TOTAL A PAGAR Bs.</div>
+        </div>
+
+        <!-- Columna 4: Casillas de Totales -->
+        <div class="totals-values-col print-data">
+          <div class="tot-val-cell h-base"></div>
+          <div class="tot-val-cell h-otros"></div>
+          <div class="tot-val-cell h-iva"></div>
+          <div class="tot-val-cell h-igtf"></div>
+          <div class="tot-val-cell"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== PIE DE IMPRENTA Y CONTROL (PREIMPRESO) ==================== -->
+    <footer class="footer-area preprinted">
+      <div class="imprenta-left">
+        <div class="imprenta-box">
+          <div class="imp-col imp-logo">
+            <svg width="22" height="20" viewBox="0 0 28 24" style="position:absolute; left:2px; top:3px;">
+              <path d="M9,3 L22,3 L17,14 L4,14 Z" fill="none" stroke="#111" stroke-width="1.3"/>
+              <path d="M2,17 C7,20 15,20 25,16" fill="none" stroke="#111" stroke-width="1.2"/>
+            </svg>
+            <span class="imp-logo-text">La Tarjeta<small>C.A</small></span>
+          </div>
+          <div class="imp-col imp-address">
+            <div>Calle Aripao, Edificio León, Piso PB, Oficina S/N, Sector Castillito, Pto. Ordaz,</div>
+            <div>Edo. Bolívar, Telf.: 9223844, RIF.: J-095076555, N° de Providencia del Seniat/08/00141</div>
+            <div>de fecha 06/02/2008, Región Guayana</div>
+          </div>
+          <div class="imp-col imp-split-col">
+            <div class="imp-split-top">Fecha</div>
+            <div class="imp-split-bottom imp-date-val">30-07-2026</div>
+          </div>
+          <div class="imp-col imp-split-col">
+            <div class="imp-split-top">N° de Factura</div>
+            <div class="imp-split-bottom">
+              <span>desde el N° 00001</span>
+              <span>hasta el N° 00050</span>
+            </div>
+          </div>
+          <div class="imp-col imp-split-col">
+            <div class="imp-split-top">N° de Control</div>
+            <div class="imp-split-bottom">
+              <span>desde el N° 00-0000001</span>
+              <span>hasta el N° 00-0000050</span>
+            </div>
+          </div>
+        </div>
+        <div class="copies-legend">
+          <span>ORIGINAL BLANCA: CLIENTE</span>
+          <span>COPIA DE COLOR SIN DERECHO A CRÉDITO FISCAL</span>
+        </div>
+      </div>
+
+      <div class="control-right">
+        <div class="control-title">N° DE CONTROL</div>
+        <div class="control-prefix">00-0000014</div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ==================== LÓGICA DE CALIBRACIÓN ==================== -->
+  <script>
+    (function () {
+      'use strict';
+
+      var SECTIONS = [
+        { id: 'emision',   label: 'Fecha / Factura N°' },
+        { id: 'cliente',   label: 'Datos del Cliente' },
+        { id: 'renglon',   label: 'Columna RENGLÓN' },
+        { id: 'desc',      label: 'Columna DESCRIPCIÓN' },
+        { id: 'cant',      label: 'Columna CANTIDAD' },
+        { id: 'precio',    label: 'Columna PRECIO UNITARIO' },
+        { id: 'exento',    label: 'Columna (E) EXENTO' },
+        { id: 'monto',     label: 'Columna MONTO' },
+        { id: 'pago',      label: 'Forma de Pago' },
+        { id: 'bcv',       label: 'Ley IVA / BCV' },
+        { id: 'totlabels', label: 'Etiquetas de Totales' },
+        { id: 'totvals',   label: 'Valores de Totales' }
+      ];
+
+      var STORAGE_KEY = 'talonario-cal-v2';
+      var root = document.documentElement;
+      var state = {};
+      var current = null;
+
+      // Base inicial: lo que ya esté escrito en el CSS (:root) del propio archivo.
+      var initialStyles = getComputedStyle(root);
+      SECTIONS.forEach(function (s) {
+        state[s.id] = {
+          x: parseFloat(initialStyles.getPropertyValue('--cal-' + s.id + '-x')) || 0,
+          y: parseFloat(initialStyles.getPropertyValue('--cal-' + s.id + '-y')) || 0
+        };
+      });
+
+      // Si hay ajustes guardados en este navegador, tienen prioridad.
+      try {
+        var saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+        if (saved) {
+          SECTIONS.forEach(function (s) {
+            if (saved[s.id]) {
+              state[s.id] = { x: +saved[s.id].x || 0, y: +saved[s.id].y || 0 };
+            }
+          });
+        }
+      } catch (e) { /* sin persistencia disponible */ }
+
+      function wrapCells() {
+        document.querySelectorAll('.items-table tbody td').forEach(function (cell) {
+          if (cell.firstElementChild && cell.firstElementChild.classList.contains('cal-cell')) return;
+          var span = document.createElement('span');
+          span.className = 'cal-cell';
+          while (cell.firstChild) span.appendChild(cell.firstChild);
+          cell.appendChild(span);
+        });
+      }
+
+      function round1(n) { return Math.round(n * 10) / 10; }
+
+      function applyAll() {
+        SECTIONS.forEach(function (s) {
+          var v = state[s.id];
+          root.style.setProperty('--cal-' + s.id + '-x', v.x + 'mm');
+          root.style.setProperty('--cal-' + s.id + '-y', v.y + 'mm');
+        });
+      }
+
+      function persist() {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+      }
+
+      function targetsFor(id) {
+        function q(sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); }
+        switch (id) {
+          case 'emision':   return q('.top-bar .print-data');
+          case 'cliente':   return q('.client-box .print-data');
+          case 'pago':      return q('.payment-col .print-data');
+          case 'bcv':       return q('.bcv-col .print-data');
+          case 'totlabels': return q('.totals-labels-col .print-data');
+          case 'totvals':   return q('.totals-values-col');
+          default:
+            var idx = { renglon: 1, desc: 2, cant: 3, precio: 4, exento: 5, monto: 6 }[id];
+            if (!idx) return [];
+            return q('.items-table tbody td:nth-child(' + idx + ')');
+        }
+      }
+
+      function clearHighlight() {
+        document.querySelectorAll('.cal-target').forEach(function (el) {
+          el.classList.remove('cal-target');
+        });
+      }
+
+      function refreshControls() {
+        var outX = document.getElementById('calValX');
+        var outY = document.getElementById('calValY');
+        var label = document.getElementById('calCurrent');
+
+        if (!current) {
+          label.textContent = 'Selecciona una sección';
+          outX.textContent = '0.0';
+          outY.textContent = '0.0';
+          return;
+        }
+
+        var info = SECTIONS.filter(function (s) { return s.id === current; })[0];
+        label.textContent = info ? info.label : current;
+        outX.textContent = state[current].x.toFixed(1);
+        outY.textContent = state[current].y.toFixed(1);
+      }
+
+      function select(id) {
+        current = id;
+        document.querySelectorAll('#calSections a').forEach(function (a) {
+          a.classList.toggle('active', a.getAttribute('data-id') === id);
+        });
+        clearHighlight();
+        targetsFor(id).forEach(function (el) { el.classList.add('cal-target'); });
+        refreshControls();
+      }
+
+      function adjust(axis, delta) {
+        if (!current) return;
+        var v = state[current];
+        v[axis] = round1(Math.max(-30, Math.min(30, v[axis] + delta)));
+        applyAll();
+        persist();
+        refreshControls();
+      }
+
+      function resetSection() {
+        if (!current) return;
+        state[current] = { x: 0, y: 0 };
+        applyAll();
+        persist();
+        refreshControls();
+      }
+
+      function resetAll() {
+        SECTIONS.forEach(function (s) { state[s.id] = { x: 0, y: 0 }; });
+        applyAll();
+        persist();
+        refreshControls();
+      }
+
+      function setOffset(axis, value) {
+        var val = round1(value);
+        root.style.setProperty('--offset-' + axis, val + 'mm');
+        var inputs = document.querySelectorAll('.toolbar input[type="number"]');
+        var input = inputs[axis === 'x' ? 0 : 1];
+        if (input) input.value = val;
+      }
+
+      function importFromText(text) {
+        var parsed = {};
+        var re = /--cal-([a-z]+)-([xy])\s*:\s*(-?\d+(?:\.\d+)?)mm/g;
+        var m;
+
+        while ((m = re.exec(text)) !== null) {
+          var id = m[1];
+          var axis = m[2];
+          if (!state[id]) continue; // ignora variables sin sección activa
+          state[id][axis] = round1(Math.max(-30, Math.min(30, parseFloat(m[3]))));
+          parsed[id] = true;
+        }
+
+        var ox = /--offset-x\s*:\s*(-?\d+(?:\.\d+)?)mm/.exec(text);
+        var oy = /--offset-y\s*:\s*(-?\d+(?:\.\d+)?)mm/.exec(text);
+        if (ox) setOffset('x', parseFloat(ox[1]));
+        if (oy) setOffset('y', parseFloat(oy[1]));
+
+        applyAll();
+        persist();
+        refreshControls();
+        if (current) select(current);
+
+        return Object.keys(parsed).length;
+      }
+
+      function buildNav() {
+        var nav = document.getElementById('calSections');
+        SECTIONS.forEach(function (s) {
+          var a = document.createElement('a');
+          a.href = '#';
+          a.setAttribute('data-id', s.id);
+          a.textContent = s.label;
+          a.addEventListener('click', function (ev) {
+            ev.preventDefault();
+            select(s.id);
+          });
+          nav.appendChild(a);
+        });
+      }
+
+      function bakeHtml() {
+        var clone = document.documentElement.cloneNode(true);
+
+        ['#calPanel', '#calToggle', '#dataPanel', '#dataToggle'].forEach(function (sel) {
+          var el = clone.querySelector(sel);
+          if (el) el.remove();
+        });
+
+        clone.querySelectorAll('.cal-target').forEach(function (el) {
+          el.classList.remove('cal-target');
+        });
+
+        clone.querySelectorAll('script').forEach(function (el) { el.remove(); });
+
+        var body = clone.querySelector('body');
+        if (body) body.removeAttribute('class');
+
+        var styleEl = clone.querySelector('head > style');
+        var ox = root.style.getPropertyValue('--offset-x') || '0mm';
+        var oy = root.style.getPropertyValue('--offset-y') || '0mm';
+
+        if (styleEl) {
+          var css = styleEl.textContent;
+          SECTIONS.forEach(function (s) {
+            var v = state[s.id];
+            css = css.replace(
+              new RegExp('--cal-' + s.id + '-x\\s*:\\s*[^;]+;'),
+              '--cal-' + s.id + '-x: ' + v.x + 'mm;'
+            );
+            css = css.replace(
+              new RegExp('--cal-' + s.id + '-y\\s*:\\s*[^;]+;'),
+              '--cal-' + s.id + '-y: ' + v.y + 'mm;'
+            );
+          });
+          css = css.replace(/--offset-x\s*:\s*[^;]+;/, '--offset-x: ' + ox + ';');
+          css = css.replace(/--offset-y\s*:\s*[^;]+;/, '--offset-y: ' + oy + ';');
+          styleEl.textContent = css;
+        }
+
+        // Quitar variables inline del <html>: ya quedaron fijas en :root
+        var inlineProps = ['--offset-x', '--offset-y'];
+        SECTIONS.forEach(function (s) {
+          inlineProps.push('--cal-' + s.id + '-x', '--cal-' + s.id + '-y');
+        });
+        inlineProps.forEach(function (prop) { clone.style.removeProperty(prop); });
+        if (!clone.getAttribute('style')) clone.removeAttribute('style');
+
+        // Reflejar offsets globales en los inputs de la barra
+        var inputs = clone.querySelectorAll('.toolbar input[type="number"]');
+        if (inputs.length >= 2) {
+          inputs[0].setAttribute('value', String(parseFloat(ox) || 0));
+          inputs[1].setAttribute('value', String(parseFloat(oy) || 0));
+        }
+
+        return '<!DOCTYPE html>\n' + clone.outerHTML;
+      }
+
+      async function save() {
+        var blob = new Blob([bakeHtml()], { type: 'text/html;charset=utf-8' });
+
+        try {
+          if (window.showSaveFilePicker) {
+            var handle = await window.showSaveFilePicker({
+              suggestedName: 'imp.html',
+              types: [{ description: 'HTML', accept: { 'text/html': ['.html'] } }]
+            });
+            var writable = await handle.createWritable();
+            await writable.write(blob);
+            await writable.close();
+            return;
+          }
+        } catch (err) {
+          if (err && err.name === 'AbortError') return;
+        }
+
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'imp.html';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(function () { URL.revokeObjectURL(a.href); }, 1500);
+      }
+
+      window.__saveImp = save;
+      window.__bakeImp = bakeHtml;
+
+      document.addEventListener('DOMContentLoaded', function () {
+        wrapCells();
+        buildNav();
+        applyAll();
+        refreshControls();
+
+        var panel = document.getElementById('calPanel');
+        var toggle = document.getElementById('calToggle');
+
+        toggle.addEventListener('click', function () {
+          var dataPanel = document.getElementById('dataPanel');
+          var dataToggle = document.getElementById('dataToggle');
+          if (dataPanel) dataPanel.classList.remove('open');
+          if (dataToggle) dataToggle.style.display = '';
+          document.body.classList.remove('data-open');
+          panel.classList.add('open');
+          toggle.style.display = 'none';
+        });
+
+        document.getElementById('calClose').addEventListener('click', function () {
+          panel.classList.remove('open');
+          toggle.style.display = '';
+        });
+
+        document.getElementById('calControls').addEventListener('click', function (ev) {
+          var btn = ev.target.closest('button[data-axis]');
+          if (!btn) return;
+          adjust(btn.getAttribute('data-axis'), parseFloat(btn.getAttribute('data-delta')));
+        });
+
+        document.getElementById('calResetSection').addEventListener('click', resetSection);
+        document.getElementById('calResetAll').addEventListener('click', resetAll);
+        document.getElementById('calSave').addEventListener('click', save);
+
+        var fileInput = document.getElementById('calFile');
+        var msg = document.getElementById('calMsg');
+
+        document.getElementById('calImport').addEventListener('click', function () {
+          fileInput.click();
+        });
+
+        fileInput.addEventListener('change', function () {
+          var file = fileInput.files && fileInput.files[0];
+          if (!file) return;
+
+          var reader = new FileReader();
+          reader.onload = function () {
+            var count = importFromText(String(reader.result));
+            msg.textContent = count > 0
+              ? 'Calibración cargada: ' + count + ' secciones.'
+              : 'No se encontraron variables --cal-* en ese archivo.';
+            fileInput.value = '';
+          };
+          reader.onerror = function () {
+            msg.textContent = 'No se pudo leer el archivo.';
+            fileInput.value = '';
+          };
+          reader.readAsText(file, 'utf-8');
+        });
+      });
+    })();
+  </script>
+
+  <!-- ==================== LÓGICA DE DATOS ==================== -->
+  <script>
+    (function () {
+      'use strict';
+
+      var DATA_KEY = 'talonario-data-v2';
+      var ROWS = 24;
+      var moneyFmt;
+
+      try {
+        moneyFmt = new Intl.NumberFormat('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      } catch (e) {
+        moneyFmt = { format: function (n) { return n.toFixed(2).replace('.', ','); } };
+      }
+
+      function fmt(n) { return moneyFmt.format(n || 0); }
+      function pad(n, size) { var s = String(n); while (s.length < size) s = '0' + s; return s; }
+      function text(el, v) { if (el) el.textContent = v; }
+      function val(id) { var el = document.getElementById(id); return el ? el.value.trim() : ''; }
+      function setVal(id, v) { var el = document.getElementById(id); if (el) el.value = v; }
+      function setChecked(id, v) { var el = document.getElementById(id); if (el) el.checked = !!v; }
+      function textOf(sel) { var el = document.querySelector(sel); return el ? el.textContent.trim() : ''; }
+      function cellText(cell) {
+        if (!cell) return '';
+        var inner = cell.querySelector('.cal-cell');
+        return (inner || cell).textContent.trim();
+      }
+
+      function num(v) {
+        var s = String(v == null ? '' : v).trim().replace(/\s|Bs\.?|\$/gi, '');
+        if (!s) return 0;
+        if (s.indexOf(',') !== -1) {
+          s = s.replace(/\./g, '').replace(',', '.');
+        } else if (/^-?\d{1,3}(\.\d{3})+$/.test(s)) {
+          s = s.replace(/\./g, '');
+        }
+        var n = parseFloat(s);
+        return isNaN(n) ? 0 : n;
+      }
+
+      function rowEls() {
+        return Array.prototype.slice.call(document.querySelectorAll('#d-rows .d-row'));
+      }
+
+      function buildRows() {
+        var wrap = document.getElementById('d-rows');
+        if (!wrap) return;
+        var html = '';
+        for (var i = 1; i <= ROWS; i++) {
+          html += '<div class="d-row" data-row="' + i + '">' +
+            '<input class="d-ren" type="text" autocomplete="off" placeholder="" />' +
+            '<input class="d-desc" type="text" autocomplete="off" placeholder="Descripción" />' +
+            '<input class="d-cant" type="text" inputmode="decimal" placeholder="0" />' +
+            '<input class="d-precio" type="text" inputmode="decimal" placeholder="0,00" />' +
+            '<input class="d-e" type="checkbox" title="Exento" />' +
+            '<input class="d-monto" type="text" inputmode="decimal" placeholder="0,00" />' +
+            '</div>';
+        }
+        wrap.innerHTML = html;
+      }
+
+      function readRow(row) {
+        return {
+          ren: row.querySelector('.d-ren').value.trim(),
+          desc: row.querySelector('.d-desc').value.trim(),
+          cant: row.querySelector('.d-cant').value.trim(),
+          precio: row.querySelector('.d-precio').value.trim(),
+          exento: row.querySelector('.d-e').checked,
+          monto: row.querySelector('.d-monto').value.trim()
+        };
+      }
+
+      function applyState(s) {
+        s = s || {};
+        var e = s.emision || {};
+        setVal('d-lugar', e.lugar || '');
+        setVal('d-dia', e.dia || '');
+        setVal('d-mes', e.mes || '');
+        setVal('d-anio', e.anio || '');
+
+        var c = s.cliente || {};
+        setVal('d-nombre', c.nombre || '');
+        setVal('d-domicilio', c.domicilio || '');
+        setVal('d-rif', c.rif || '');
+        setVal('d-telefono', c.telefono || '');
+        setVal('d-cond', c.condiciones || '');
+
+        var rows = s.rows || [];
+        rowEls().forEach(function (row, i) {
+          var r = rows[i] || {};
+          row.querySelector('.d-ren').value = r.ren || '';
+          row.querySelector('.d-desc').value = r.desc || '';
+          row.querySelector('.d-cant').value = r.cant || '';
+          row.querySelector('.d-precio').value = r.precio || '';
+          row.querySelector('.d-e').checked = !!r.exento;
+          row.querySelector('.d-monto').value = r.monto || '';
+        });
+
+        var p = s.pago || {};
+        setChecked('d-efectivo', p.efectivo);
+        setChecked('d-debito', p.debito);
+        setChecked('d-credito', p.credito);
+        setVal('d-transferencia', p.transferencia || '');
+        setVal('d-movil', p.movil || '');
+        setVal('d-banco', p.banco || '');
+
+        var b = s.bcv || {};
+        setVal('d-tasa', b.tasa || '');
+        setVal('d-divisas', b.divisas || '');
+
+        var t = s.totales || {};
+        setVal('d-iva-pct', t.ivaPct || '');
+        setVal('d-iva-base', t.ivaBase || '');
+        setVal('d-igtf-base', t.igtfBase || '');
+        setVal('d-base', t.base || '');
+        setVal('d-otros', t.otros || '');
+        setVal('d-iva', t.iva || '');
+        setVal('d-igtf', t.igtf || '');
+        setVal('d-total', t.total || '');
+      }
+
+      function readFromDom() {
+        var s = { emision: {}, cliente: {}, rows: [], pago: {}, bcv: {}, totales: {} };
+
+        s.emision.lugar = textOf('.top-bar .lugar-text');
+        var digits = document.querySelectorAll('.emission-values .sub-ticks span');
+        var dg = function (i) { return digits[i] ? digits[i].textContent.trim() : ''; };
+        s.emision.dia = dg(0) + dg(1);
+        s.emision.mes = dg(2) + dg(3);
+        s.emision.anio = dg(4) + dg(5) + dg(6) + dg(7);
+
+        var cv = document.querySelectorAll('.client-box .client-val');
+        s.cliente.nombre = cv[0] ? cv[0].textContent.trim() : '';
+        s.cliente.domicilio = cv[1] ? cv[1].textContent.trim() : '';
+        s.cliente.rif = cv[2] ? cv[2].textContent.trim() : '';
+        s.cliente.telefono = cv[3] ? cv[3].textContent.trim() : '';
+        s.cliente.condiciones = cv[4] ? cv[4].textContent.trim() : '';
+
+        document.querySelectorAll('.items-table tbody tr').forEach(function (tr) {
+          var cells = tr.querySelectorAll('td');
+          s.rows.push({
+            ren: cellText(cells[0]),
+            desc: cellText(cells[1]),
+            cant: cellText(cells[2]),
+            precio: cellText(cells[3]),
+            exento: /^(E|X)$/i.test(cellText(cells[4])),
+            monto: cellText(cells[5])
+          });
+        });
+
+        var checks = document.querySelectorAll('.payment-col .checkbox-sq .print-data');
+        s.pago.efectivo = checks[0] ? checks[0].textContent.trim() !== '' : false;
+        s.pago.debito = checks[1] ? checks[1].textContent.trim() !== '' : false;
+        s.pago.credito = checks[2] ? checks[2].textContent.trim() !== '' : false;
+
+        var fills = document.querySelectorAll('.payment-col .line-fill');
+        s.pago.transferencia = fills[0] ? fills[0].textContent.trim() : '';
+        s.pago.movil = fills[1] ? fills[1].textContent.trim() : '';
+        s.pago.banco = fills[2] ? fills[2].textContent.trim() : '';
+
+        s.bcv.tasa = textOf('.bcv-col .inline-line');
+        var bcvFill = document.querySelector('.bcv-col .line-fill');
+        s.bcv.divisas = bcvFill ? bcvFill.textContent.trim() : '';
+
+        s.totales.ivaPct = textOf('.totals-labels-col .blank-pct');
+        var lm = document.querySelectorAll('.totals-labels-col .blank-monto');
+        s.totales.ivaBase = lm[0] ? lm[0].textContent.trim() : '';
+        s.totales.igtfBase = lm[1] ? lm[1].textContent.trim() : '';
+
+        var tv = document.querySelectorAll('.totals-values-col .tot-val-cell');
+        s.totales.base = tv[0] ? tv[0].textContent.trim() : '';
+        s.totales.otros = tv[1] ? tv[1].textContent.trim() : '';
+        s.totales.iva = tv[2] ? tv[2].textContent.trim() : '';
+        s.totales.igtf = tv[3] ? tv[3].textContent.trim() : '';
+        s.totales.total = tv[4] ? tv[4].textContent.trim() : '';
+
+        return s;
+      }
+
+      function collect() {
+        return {
+          emision: {
+            lugar: val('d-lugar'),
+            dia: val('d-dia'),
+            mes: val('d-mes'),
+            anio: val('d-anio')
+          },
+          cliente: {
+            nombre: val('d-nombre'),
+            domicilio: val('d-domicilio'),
+            rif: val('d-rif'),
+            telefono: val('d-telefono'),
+            condiciones: val('d-cond')
+          },
+          rows: rowEls().map(readRow),
+          pago: {
+            efectivo: document.getElementById('d-efectivo').checked,
+            debito: document.getElementById('d-debito').checked,
+            credito: document.getElementById('d-credito').checked,
+            transferencia: val('d-transferencia'),
+            movil: val('d-movil'),
+            banco: val('d-banco')
+          },
+          bcv: {
+            tasa: val('d-tasa'),
+            divisas: val('d-divisas')
+          },
+          totales: {
+            ivaPct: val('d-iva-pct'),
+            ivaBase: val('d-iva-base'),
+            igtfBase: val('d-igtf-base'),
+            base: val('d-base'),
+            otros: val('d-otros'),
+            iva: val('d-iva'),
+            igtf: val('d-igtf'),
+            total: val('d-total')
+          }
+        };
+      }
+
+      function persist() {
+        try { localStorage.setItem(DATA_KEY, JSON.stringify(collect())); } catch (e) {}
+      }
+
+      function render() {
+        // Emisión
+        text(document.querySelector('.top-bar .lugar-text'), val('d-lugar'));
+        var digits = document.querySelectorAll('.emission-values .sub-ticks span');
+        var day = val('d-dia'), mes = val('d-mes'), anio = val('d-anio');
+        var seq = [day.charAt(0), day.charAt(1), mes.charAt(0), mes.charAt(1),
+                   anio.charAt(0), anio.charAt(1), anio.charAt(2), anio.charAt(3)];
+        digits.forEach(function (span, i) { span.textContent = seq[i] || ''; });
+
+        // Cliente
+        var clientVals = document.querySelectorAll('.client-box .client-val');
+        [val('d-nombre'), val('d-domicilio'), val('d-rif'), val('d-telefono'), val('d-cond')]
+          .forEach(function (v, i) { text(clientVals[i], v); });
+
+        // Renglones (todos manuales)
+        var tbodyRows = document.querySelectorAll('.items-table tbody tr');
+
+        rowEls().forEach(function (row, i) {
+          var r = readRow(row);
+          var tr = tbodyRows[i];
+          if (!tr) return;
+
+          var cells = tr.querySelectorAll('td');
+          var inner = function (cell) { return cell ? (cell.querySelector('.cal-cell') || cell) : null; };
+
+          text(inner(cells[0]), r.ren);
+          text(inner(cells[1]), r.desc);
+          text(inner(cells[2]), r.cant);
+          text(inner(cells[3]), r.precio);
+          text(inner(cells[4]), r.exento ? 'X' : '');
+          text(inner(cells[5]), r.monto);
+        });
+
+        // Totales (todos manuales)
+        text(document.querySelector('.totals-labels-col .blank-pct'), val('d-iva-pct'));
+        var labelMontos = document.querySelectorAll('.totals-labels-col .blank-monto');
+        text(labelMontos[0], val('d-iva-base'));
+        text(labelMontos[1], val('d-igtf-base'));
+
+        var cellsTot = document.querySelectorAll('.totals-values-col .tot-val-cell');
+        [val('d-base'), val('d-otros'), val('d-iva'), val('d-igtf'), val('d-total')]
+          .forEach(function (v, i) { text(cellsTot[i], v); });
+
+        // Forma de pago
+        var checks = document.querySelectorAll('.payment-col .checkbox-sq .print-data');
+        [
+          document.getElementById('d-efectivo').checked,
+          document.getElementById('d-debito').checked,
+          document.getElementById('d-credito').checked
+        ].forEach(function (on, i) { text(checks[i], on ? 'X' : ''); });
+
+        var fills = document.querySelectorAll('.payment-col .line-fill');
+        text(fills[0], val('d-transferencia'));
+        text(fills[1], val('d-movil'));
+        text(fills[2], val('d-banco'));
+
+        // BCV
+        text(document.querySelector('.bcv-col .inline-line'), val('d-tasa'));
+        text(document.querySelector('.bcv-col .line-fill'), val('d-divisas'));
+
+        persist();
+      }
+
+      function formatMoneyField(el) {
+        var raw = el.value.trim();
+        if (!raw || !/\d/.test(raw)) return;
+        el.value = fmt(num(raw));
+      }
+
+      function clearAll() {
+        applyState({});
+        render();
+      }
+
+      document.addEventListener('DOMContentLoaded', function () {
+        buildRows();
+
+        var saved = null;
+        try { saved = JSON.parse(localStorage.getItem(DATA_KEY) || 'null'); } catch (e) {}
+
+        var state = saved || readFromDom();
+        if (!state.totales) state.totales = {};
+        applyState(state);
+        render();
+
+        var panel = document.getElementById('dataPanel');
+        var toggle = document.getElementById('dataToggle');
+
+        [['d-dia', 2], ['d-mes', 2], ['d-anio', 4]].forEach(function (pair) {
+          var el = document.getElementById(pair[0]);
+          var size = pair[1];
+          el.addEventListener('input', function () {
+            this.value = this.value.replace(/\D/g, '').slice(0, size);
+          });
+          el.addEventListener('blur', function () {
+            if (this.value) this.value = pad(this.value, size);
+            render();
+          });
+        });
+
+        document.getElementById('d-rows').addEventListener('blur', function (ev) {
+          var el = ev.target;
+          if (el && (el.classList.contains('d-precio') || el.classList.contains('d-monto'))) {
+            formatMoneyField(el);
+            render();
+          }
+        }, true);
+
+        ['d-iva-base', 'd-igtf-base', 'd-base', 'd-otros', 'd-iva', 'd-igtf', 'd-total']
+          .forEach(function (id) {
+            document.getElementById(id).addEventListener('blur', function () {
+              formatMoneyField(this);
+              render();
+            });
+          });
+
+        document.querySelectorAll('#dataPanel input, #dataPanel textarea').forEach(function (el) {
+          el.addEventListener('input', render);
+          el.addEventListener('change', render);
+        });
+
+        toggle.addEventListener('click', function () {
+          var calPanel = document.getElementById('calPanel');
+          var calToggle = document.getElementById('calToggle');
+          if (calPanel) calPanel.classList.remove('open');
+          if (calToggle) calToggle.style.display = '';
+          document.body.classList.add('data-open');
+          panel.classList.add('open');
+          toggle.style.display = 'none';
+        });
+
+        document.getElementById('dataClose').addEventListener('click', function () {
+          panel.classList.remove('open');
+          toggle.style.display = '';
+          document.body.classList.remove('data-open');
+        });
+
+        document.getElementById('d-print').addEventListener('click', function () {
+          window.print();
+        });
+
+        document.getElementById('d-save').addEventListener('click', function () {
+          if (window.__saveImp) window.__saveImp();
+        });
+
+        document.getElementById('d-clear').addEventListener('click', function () {
+          if (confirm('¿Borrar todos los datos capturados? La calibración no se modifica.')) {
+            clearAll();
+          }
+        });
+      });
+    })();
+  </script>
+
+</body>
+</html>
