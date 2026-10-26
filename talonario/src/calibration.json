@@ -1,0 +1,126 @@
+{
+  "offset": {
+    "x": 0,
+    "y": 0
+  },
+  "emision": {
+    "x": -0.2,
+    "y": 1.1,
+    "s": null
+  },
+  "cliente": {
+    "x": -2.5,
+    "y": -0.9,
+    "s": null
+  },
+  "renglon": {
+    "x": 1.2,
+    "y": -1.5,
+    "s": null
+  },
+  "desc": {
+    "x": 0.7,
+    "y": -1.5,
+    "s": null
+  },
+  "cant": {
+    "x": -2.2,
+    "y": -1.5,
+    "s": null
+  },
+  "precio": {
+    "x": -4,
+    "y": -1.5,
+    "s": null
+  },
+  "exento": {
+    "x": -2.8,
+    "y": -1.5,
+    "s": null
+  },
+  "monto": {
+    "x": -4.5,
+    "y": -1.5,
+    "s": null
+  },
+  "pago-efectivo": {
+    "x": 2.5,
+    "y": -1,
+    "s": null
+  },
+  "pago-debito": {
+    "x": 2.5,
+    "y": -1,
+    "s": null
+  },
+  "pago-credito": {
+    "x": 2.5,
+    "y": -1,
+    "s": null
+  },
+  "pago-transferencia": {
+    "x": 3,
+    "y": -0.5,
+    "s": null
+  },
+  "pago-movil": {
+    "x": 2.5,
+    "y": -1,
+    "s": null
+  },
+  "pago-banco": {
+    "x": 2.5,
+    "y": -1,
+    "s": null
+  },
+  "bcv-tasa": {
+    "x": 5.1,
+    "y": 1,
+    "s": null
+  },
+  "bcv-divisas": {
+    "x": 2,
+    "y": -1.2,
+    "s": null
+  },
+  "tot-iva-pct": {
+    "x": -7,
+    "y": 0.4,
+    "s": null
+  },
+  "tot-iva-base": {
+    "x": -2,
+    "y": 0.3,
+    "s": null
+  },
+  "tot-igtf-base": {
+    "x": 1,
+    "y": 0,
+    "s": null
+  },
+  "tot-base": {
+    "x": -3.5,
+    "y": -1,
+    "s": null
+  },
+  "tot-otros": {
+    "x": -3.5,
+    "y": 0,
+    "s": null
+  },
+  "tot-iva": {
+    "x": -3.5,
+    "y": 0,
+    "s": null
+  },
+  "tot-igtf": {
+    "x": 5,
+    "y": -3,
+    "s": null
+  },
+  "tot-total": {
+    "x": -3.5,
+    "y": -1.5,
+    "s": null
+  }
+}

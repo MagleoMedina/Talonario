@@ -1,0 +1,568 @@
+
+  <!-- BARRA DE CALIBRACIÓN Y PRUEBA (NO SE IMPRIME) -->
+  <div class="toolbar">
+    <button type="button" onclick="document.body.classList.toggle('preview-print-only')">
+      Alternar Vista: Guía / Solo Impresión
+    </button>
+    <label>
+      Offset X (mm):
+      <input type="number" step="0.5" value="0" oninput="document.documentElement.style.setProperty('--offset-x', this.value + 'mm')" />
+    </label>
+    <label>
+      Offset Y (mm):
+      <input type="number" step="0.5" value="0" oninput="document.documentElement.style.setProperty('--offset-y', this.value + 'mm')" />
+    </label>
+    <button type="button" onclick="window.print()">Imprimir (Ctrl+P)</button>
+  </div>
+
+  <!-- ==================== PANEL DE CALIBRACIÓN POR SECCIÓN (NO SE IMPRIME) ==================== -->
+  <button type="button" class="cal-toggle" id="calToggle" title="Abrir calibración">⚙ Calibrar</button>
+
+  <aside class="cal-panel" id="calPanel" aria-hidden="false">
+    <div class="cal-panel-head">
+      <strong>Calibración por item</strong>
+      <button type="button" id="calClose" title="Cerrar panel">×</button>
+    </div>
+
+    <nav class="cal-sections" id="calSections"></nav>
+
+    <div class="cal-controls" id="calControls">
+      <div class="cal-current" id="calCurrent">Selecciona un item</div>
+
+      <div class="cal-axis">
+        <span class="cal-axis-label">Eje X (mm)</span>
+        <div class="cal-btns">
+          <button type="button" data-axis="x" data-delta="-0.5">← 0.5</button>
+          <button type="button" data-axis="x" data-delta="-0.1">← 0.1</button>
+          <output id="calValX">0.0</output>
+          <button type="button" data-axis="x" data-delta="0.1">0.1 →</button>
+          <button type="button" data-axis="x" data-delta="0.5">0.5 →</button>
+        </div>
+      </div>
+
+      <div class="cal-axis">
+        <span class="cal-axis-label">Eje Y (mm)</span>
+        <div class="cal-btns">
+          <button type="button" data-axis="y" data-delta="-0.5">↑ 0.5</button>
+          <button type="button" data-axis="y" data-delta="-0.1">↑ 0.1</button>
+          <output id="calValY">0.0</output>
+          <button type="button" data-axis="y" data-delta="0.1">0.1 ↓</button>
+          <button type="button" data-axis="y" data-delta="0.5">0.5 ↓</button>
+        </div>
+      </div>
+
+      <div class="cal-axis">
+        <span class="cal-axis-label">Tamaño (pt)</span>
+        <div class="cal-btns">
+          <button type="button" data-axis="s" data-delta="-1">− 1</button>
+          <button type="button" data-axis="s" data-delta="-0.5">− 0.5</button>
+          <output id="calValS">0.0</output>
+          <button type="button" data-axis="s" data-delta="0.5">0.5 +</button>
+          <button type="button" data-axis="s" data-delta="1">1 +</button>
+        </div>
+      </div>
+
+      <div class="cal-actions">
+        <button type="button" id="calResetSection">Reset item</button>
+        <button type="button" id="calResetAll">Reset todo</button>
+        <button type="button" id="calResetSize">Auto tamaño</button>
+      </div>
+
+      <button type="button" class="cal-import" id="calImport">📂 Cargar calibración desde HTML</button>
+      <input type="file" id="calFile" accept=".html,text/html" hidden />
+      <div class="cal-msg" id="calMsg"></div>
+
+      <button type="button" class="cal-save" id="calSave">💾 Guardar calibración</button>
+      <p class="cal-hint">Mueve solo el dato impreso; los rótulos, líneas y encabezados preimpresos quedan fijos. Forma de Pago, Ley IVA/BCV y Totales se calibran item por item. <b>Cargar desde HTML</b> lee los valores de un imp.html calibrado. <b>Guardar calibración</b> los escribe en <b>src/calibration.json</b> (solo con <b>vite dev</b>).</p>
+    </div>
+  </aside>
+
+  <!-- ==================== PANEL DE DATOS A IMPRIMIR (NO SE IMPRIME) ==================== -->
+  <button type="button" class="data-toggle" id="dataToggle" title="Abrir datos">📝 Datos</button>
+  <span class="spandex">
+
+  
+  <aside class="data-panel" id="dataPanel">
+    <div class="data-head">
+      <strong>Datos de impresión</strong>
+      <button type="button" id="dataClose" title="Cerrar panel">×</button>
+    </div>
+
+    <div class="data-body">
+      <div class="d-group">
+        <h4>Emisión</h4>
+        <div class="d-grid">
+          <label class="d-field full">Lugar de emisión
+            <input id="d-lugar" type="text" autocomplete="off" placeholder="PUERTO ORDAZ" />
+          </label>
+          <label class="d-field">Día (DD)
+            <input id="d-dia" type="text" maxlength="2" inputmode="numeric" placeholder="17" />
+          </label>
+          <label class="d-field">Mes (MM)
+            <input id="d-mes" type="text" maxlength="2" inputmode="numeric" placeholder="10" />
+          </label>
+          <label class="d-field">Año (AAAA)
+            <input id="d-anio" type="text" maxlength="4" inputmode="numeric" placeholder="2026" />
+          </label>
+        </div>
+      </div>
+
+      <div class="d-group">
+        <h4>Cliente</h4>
+        <div class="d-grid">
+          <label class="d-field full">Nombre o razón social
+            <input id="d-nombre" type="text" autocomplete="off" placeholder="SUMINISTROS INDUSTRIALES CARONÍ, C.A." />
+          </label>
+          <label class="d-field full">Domicilio fiscal
+            <textarea id="d-domicilio" rows="2" placeholder="ZONA INDUSTRIAL UNARE II, CALLE NEVERÍ..."></textarea>
+          </label>
+          <label class="d-field">R.I.F. ó C.I.
+            <input id="d-rif" type="text" autocomplete="off" placeholder="J-40125896-3" />
+          </label>
+          <label class="d-field">Teléfono
+            <input id="d-telefono" type="text" autocomplete="off" placeholder="(0286) 951.44.12" />
+          </label>
+          <label class="d-field full">Condiciones de pago
+            <input id="d-cond" type="text" autocomplete="off" placeholder="CONTADO" />
+          </label>
+        </div>
+      </div>
+
+      <div class="d-group">
+        <h4>Empresas guardadas</h4>
+        <div class="d-grid">
+          <label class="d-field full">Selecciona una empresa
+            <select id="d-empresa-select">
+              <option value="">— Selecciona una empresa —</option>
+            </select>
+          </label>
+        </div>
+        <div class="d-empresa-actions">
+          <button type="button" id="d-empresa-save">💾 Guardar empresa actual</button>
+        </div>
+        <p class="d-empresa-msg" id="d-empresa-msg"></p>
+        <p class="data-hint">Guarda Nombre, Domicilio fiscal, R.I.F./C.I. y Teléfono en <code>src/empresas.json</code>.</p>
+      </div>
+
+      <div class="d-group">
+        <h4>Renglones</h4>
+        <div class="d-rows-head">
+          <div class="d-line1"><span>N°</span><span>Descripción</span></div>
+          <div class="d-line2"><span>Cant.</span><span>Precio</span><span>E</span><span>Monto</span></div>
+        </div>
+        <div class="d-rows" id="d-rows"></div>
+        <p class="data-hint">Escribe el N° de renglón y el Monto a mano; no se generan ni se calculan.</p>
+      </div>
+
+      <div class="d-group">
+        <h4>Forma de pago</h4>
+        <div class="d-checks">
+          <label><input type="checkbox" id="d-efectivo" /> Efectivo</label>
+          <label><input type="checkbox" id="d-debito" /> Tarj. de Débito</label>
+          <label><input type="checkbox" id="d-credito" /> Tarj. de Crédito</label>
+        </div>
+        <div class="d-grid" style="margin-top: 8px;">
+          <label class="d-field full">Transferencia
+            <input id="d-transferencia" type="text" autocomplete="off" placeholder="#88492014 (Bs. 37.740,00)" />
+          </label>
+          <label class="d-field full">Pago móvil
+            <input id="d-movil" type="text" autocomplete="off" placeholder="—" />
+          </label>
+          <label class="d-field full">Banco
+            <input id="d-banco" type="text" autocomplete="off" placeholder="BANESCO BANCO UNIVERSAL" />
+          </label>
+        </div>
+      </div>
+
+      <div class="d-group">
+        <h4>Ley IVA / BCV</h4>
+        <div class="d-grid">
+          <label class="d-field">Tasa de cambio
+            <input id="d-tasa" type="text" autocomplete="off" inputmode="decimal" placeholder="" />
+          </label>
+          <label class="d-field">Monto en divisas
+            <input id="d-divisas" type="text" autocomplete="off" placeholder="" />
+          </label>
+        </div>
+      </div>
+
+      <div class="d-group">
+        <h4>Totales</h4>
+        <div class="d-grid">
+          <label class="d-field">I.V.A. (%)
+            <input id="d-iva-pct" type="text" autocomplete="off" inputmode="decimal" placeholder="" />
+          </label>
+          <label class="d-field">Base I.V.A. (SOBRE Bs.)
+            <input id="d-iva-base" type="text" autocomplete="off" inputmode="decimal" placeholder="" />
+          </label>
+          <label class="d-field">Base IGTF (3%)
+            <input id="d-igtf-base" type="text" autocomplete="off" inputmode="decimal" placeholder="" />
+          </label>
+          <label class="d-field">BASE Bs.
+            <input id="d-base" type="text" autocomplete="off" inputmode="decimal" placeholder="" />
+          </label>
+          <label class="d-field">OTROS Bs.
+            <input id="d-otros" type="text" autocomplete="off" inputmode="decimal" placeholder="" />
+          </label>
+          <label class="d-field">I.V.A. Bs.
+            <input id="d-iva" type="text" autocomplete="off" inputmode="decimal" placeholder="" />
+          </label>
+          <label class="d-field">IGTF Bs.
+            <input id="d-igtf" type="text" autocomplete="off" inputmode="decimal" placeholder="" />
+          </label>
+          <label class="d-field full">TOTAL A PAGAR Bs.
+            <input id="d-total" type="text" autocomplete="off" inputmode="decimal" placeholder="" />
+          </label>
+        </div>
+        <p class="data-hint">Todos los montos y totales se imprimen tal como los escribas. No hay cálculo automático.</p>
+      </div>
+
+      <p class="data-hint">Los datos quedan guardados en este navegador. <b>Guardar HTML</b> crea una copia fija, sin panel, lista para imprimir.</p>
+    </div>
+
+    <div class="data-foot">
+      <button type="button" class="d-clear" id="d-clear">🧹 Limpiar</button>
+      <button type="button" class="d-print" id="d-print">🖨 Imprimir</button>
+      <button type="button" class="d-save" id="d-save">💾 Guardar</button>
+    </div>
+  </aside>
+
+  <div class="page-letter">
+    <!-- ==================== ENCABEZADO (PREIMPRESO) ==================== -->
+    <header class="header preprinted">
+      <div class="logo-container">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="550 1820 3920 1350" preserveAspectRatio="xMinYMid meet">
+          <defs>
+            <style>
+              .sg-dark { fill: #414040; }
+              .sg-gold { fill: #E1A413; }
+              .sg-gold-alt { fill: #E4A924; }
+              .sg-charcoal { fill: #4B4949; }
+              .sg-groups { font-family: 'Arial Black', Arial, sans-serif; font-size: 195px; font-weight: 900; fill: #E1A413; }
+              .sg-ca { font-family: 'Arial Black', Arial, sans-serif; font-size: 175px; font-weight: 900; fill: #414040; }
+              .sg-rif { font-family: Arial, Helvetica, sans-serif; font-size: 96px; font-weight: 700; fill: #4B4949; letter-spacing: 24px; }
+            </style>
+          </defs>
+          <polygon class="sg-dark" points="1126,3111 624,2785 624,2174 1126,1850 1632,2174 1632,2660 1536,2596 1536,2228 1126,1964 720,2228 720,2730 1126,2994" />
+          <polygon class="sg-gold" points="1126,3111 1632,2785 1632,2720 1536,2655 1536,2730 1126,2994" />
+          <path class="sg-dark" d="M 1094,2256 L 840,2256 C 795,2256 778,2278 778,2320 L 778,2480 C 778,2525 798,2546 842,2546 L 1005,2546 L 1005,2648 L 818,2648 L 764,2738 L 1032,2738 C 1076,2738 1096,2714 1096,2670 L 1096,2512 C 1096,2468 1074,2448 1030,2448 L 868,2448 L 868,2352 L 1094,2352 Z" />
+          <path class="sg-dark" d="M 1474,2256 L 1134,2256 L 1134,2842 L 1474,2632 L 1474,2448 L 1310,2448 L 1265,2538 L 1382,2538 L 1382,2582 L 1222,2680 L 1222,2352 L 1474,2352 Z" />
+          <rect class="sg-dark" x="1798" y="1995" width="16" height="965" rx="6" />
+          <path class="sg-dark" d="M 2380,2130 L 2015,2130 C 1960,2130 1938,2156 1938,2205 L 1938,2305 C 1938,2355 1962,2380 2018,2380 L 2285,2380 L 2285,2442 L 1942,2442 L 1942,2525 L 2312,2525 C 2372,2525 2396,2498 2396,2442 L 2396,2342 C 2396,2290 2372,2268 2312,2268 L 2048,2268 L 2048,2210 L 2380,2210 Z" />
+          <path class="sg-dark" d="M 2462,2525 L 2462,2130 L 2835,2130 C 2892,2130 2918,2158 2918,2212 L 2918,2328 C 2918,2382 2892,2410 2835,2410 L 2572,2410 L 2572,2525 Z M 2572,2212 L 2572,2328 L 2808,2328 L 2808,2212 Z" />
+          <path class="sg-dark" d="M 2988,2525 L 2988,2130 L 3398,2130 L 3398,2210 L 3098,2210 L 3098,2286 L 3365,2286 L 3365,2364 L 3098,2364 L 3098,2444 L 3398,2444 L 3398,2525 Z" />
+          <path class="sg-dark" d="M 3468,2525 L 3468,2130 L 3878,2130 L 3878,2210 L 3578,2210 L 3578,2286 L 3845,2286 L 3845,2364 L 3578,2364 L 3578,2444 L 3878,2444 L 3878,2525 Z" />
+          <path class="sg-dark" d="M 3948,2525 L 3948,2130 L 4310,2130 C 4378,2130 4408,2168 4408,2235 L 4408,2420 C 4408,2488 4378,2525 4310,2525 Z M 4058,2212 L 4058,2444 L 4295,2444 L 4295,2212 Z" />
+          <text class="sg-groups" x="1932" y="2768" textLength="1835" lengthAdjust="spacing">GROUPS</text>
+          <text class="sg-ca" x="3952" y="2768" letter-spacing="18">C.A</text>
+          <rect class="sg-gold-alt" x="1946" y="2908" width="510" height="11" />
+          <text class="sg-rif" x="2525" y="2946">RIF J-508443900</text>
+          <rect class="sg-gold-alt" x="3878" y="2908" width="510" height="11" />
+        </svg>
+      </div>
+
+      <div class="company-info">
+        <div class="company-title">SPEED GROUPS C.A.</div>
+        <div class="company-address">
+          AV CARACAS EDIF ROCAS DEL ORINOCO PISO 1 LOCAL S/N SECTOR UD-323,<br />
+          MANZANA 80, PARCELA 04 CIUDAD GUAYANA BOLIVAR<br />
+          ZONA POSTAL 8050 Telf.: (0412) 782.29.20 - Correo: speedgroupsca@gmail.com
+        </div>
+        <div class="company-rif">RIF.: J-50844390-0</div>
+      </div>
+    </header>
+
+    <!-- ==================== FECHA Y FACTURA N° ==================== -->
+    <section class="top-bar">
+      <div class="emission-box">
+        <div class="emission-headers preprinted">
+          <div>LUGAR Y FECHA DE EMISIÓN</div>
+          <div>DIA</div>
+          <div>MES</div>
+          <div>AÑO</div>
+        </div>
+        <div class="emission-values">
+          <div><span class="lugar-text print-data">PUERTO ORDAZ</span></div>
+          <div>
+            <div class="sub-ticks">
+              <span class="print-data">1</span>
+              <span class="print-data">3</span>
+            </div>
+          </div>
+          <div>
+            <div class="sub-ticks">
+              <span class="print-data">1</span>
+              <span class="print-data">0</span>
+            </div>
+          </div>
+          <div>
+            <div class="sub-ticks">
+              <span class="print-data">2</span>
+              <span class="print-data">0</span>
+              <span class="print-data">2</span>
+              <span class="print-data">6</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- El N° de Factura ya viene preimpreso en el talonario -->
+      <div class="factura-num-area preprinted">
+        <span class="factura-label">FACTURA Nº.</span>
+        <span class="serial-red">00014</span>
+      </div>
+    </section>
+
+    <!-- ==================== DATOS DEL CLIENTE ==================== -->
+    <section class="client-box">
+      <div class="client-row">
+        <span class="preprinted">Nombre o Razón Social:</span>
+        <span class="client-val print-data">SUMINISTROS INDUSTRIALES CARONÍ, C.A.</span>
+      </div>
+      <div class="client-row">
+        <span class="preprinted">Domicilio Fiscal:</span>
+        <span class="client-val print-data">ZONA INDUSTRIAL UNARE II, CALLE NEVERÍ, GALPÓN NRO. 14, PUERTO ORDAZ - EDO. BOLÍVAR</span>
+      </div>
+      <div class="client-row">
+        <div class="client-row-split">
+          <div>
+            <span class="preprinted">R.I.F. ó C.I.:</span>
+            <span class="client-val print-data">J-40125896-3</span>
+          </div>
+          <div>
+            <span class="preprinted">Teléfono:</span>
+            <span class="client-val print-data">(0286) 951.44.12</span>
+          </div>
+          <div>
+            <span class="preprinted">Condiciones de Pago:</span>
+            <span class="client-val print-data">CONTADO</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TABLA PRINCIPAL + TOTALES ==================== -->
+    <section class="main-table-wrapper">
+      <table class="items-table">
+        <colgroup>
+          <col class="col-renglon" />
+          <col class="col-desc" />
+          <col class="col-cant" />
+          <col class="col-precio" />
+          <col class="col-exento" />
+          <col class="col-monto" />
+        </colgroup>
+        <thead class="preprinted">
+          <tr>
+            <th class="th-renglon">RENGLÓN</th>
+            <th>DESCRIPCION</th>
+            <th class="th-cant">CANTIDAD</th>
+            <th class="th-precio">PRECIO DE<br />VENTA UNITARIO</th>
+            <th>( E )</th>
+            <th>MONTO</th>
+          </tr>
+        </thead>
+        <tbody class="print-data">
+          <!-- 24 renglones idénticos al físico -->
+          <tr>
+            <td class="td-center">01</td>
+            <td>SERVICIO DE MANTENIMIENTO PREVENTIVO SERVIDOR DELL POWEREDGE</td>
+            <td class="td-center">1</td>
+            <td class="td-right">6.500,00</td>
+            <td class="td-center"></td>
+            <td class="td-right">6.500,00</td>
+          </tr>
+          <tr>
+            <td class="td-center">02</td>
+            <td>SWITCH GIGABIT ETHERNET 24 PUERTOS TP-LINK TL-SG1024D</td>
+            <td class="td-center">2</td>
+            <td class="td-right">4.250,00</td>
+            <td class="td-center"></td>
+            <td class="td-right">8.500,00</td>
+          </tr>
+          <tr>
+            <td class="td-center">03</td>
+            <td>BOBINA DE CABLE UTP CAT6 100% COBRE (305 METROS)</td>
+            <td class="td-center">1</td>
+            <td class="td-right">5.800,00</td>
+            <td class="td-center"></td>
+            <td class="td-right">5.800,00</td>
+          </tr>
+          <tr>
+            <td class="td-center">04</td>
+            <td>UNIDAD DE ESTADO SÓLIDO (SSD) KINGSTON NV2 1TB M.2 NVME</td>
+            <td class="td-center">4</td>
+            <td class="td-right">2.950,00</td>
+            <td class="td-center"></td>
+            <td class="td-right">11.800,00</td>
+          </tr>
+          <tr>
+            <td class="td-center">05</td>
+            <td>MEMORIA RAM DDR4 16GB 3200MHZ CORSAIR VENGEANCE</td>
+            <td class="td-center">4</td>
+            <td class="td-right">1.850,00</td>
+            <td class="td-center"></td>
+            <td class="td-right">7.400,00</td>
+          </tr>
+          <tr>
+            <td class="td-center">06</td>
+            <td>UPS INTERACTIVO APC 1000VA / 600W 8 TOMAS AVR</td>
+            <td class="td-center">2</td>
+            <td class="td-right">5.100,00</td>
+            <td class="td-center"></td>
+            <td class="td-right">10.200,00</td>
+          </tr>
+          <tr>
+            <td class="td-center">07</td>
+            <td>PACK CONECTORES RJ45 CAT6 BLINDADOS (BOLSA 100 UNIDADES)</td>
+            <td class="td-center">2</td>
+            <td class="td-right">650,00</td>
+            <td class="td-center"></td>
+            <td class="td-right">1.300,00</td>
+          </tr>
+          <tr>
+            <td class="td-center">08</td>
+            <td>MANUAL TÉCNICO DE REDES Y CERTIFICADO DE GARANTÍA IMPRESO</td>
+            <td class="td-center">1</td>
+            <td class="td-right">500,00</td>
+            <td class="td-center">X</td>
+            <td class="td-right">500,00</td>
+          </tr>
+          <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+          <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        </tbody>
+      </table>
+
+      <!-- Bloque Inferior integrado a la tabla -->
+      <div class="bottom-section">
+        <!-- Columna 1: Forma de Pago -->
+        <div class="payment-col">
+          <div class="payment-title preprinted">FORMA DE PAGO:</div>
+          <div class="payment-checks">
+            <span class="check-item" data-cal="pago-efectivo"><span class="preprinted">Efectivo</span> <i class="checkbox-sq"><span class="print-data"></span></i></span>
+            <span class="check-item" data-cal="pago-debito"><span class="preprinted">Tarj. de Débito</span> <i class="checkbox-sq"><span class="print-data"></span></i></span>
+            <span class="check-item" data-cal="pago-credito"><span class="preprinted">Tarj. de Crédito</span> <i class="checkbox-sq"><span class="print-data"></span></i></span>
+          </div>
+          <div class="payment-line" data-cal="pago-transferencia">
+            <span class="preprinted">Transferencia</span>
+            <div class="line-fill print-data"></div>
+          </div>
+          <div class="payment-line" data-cal="pago-movil">
+            <span class="preprinted">Pago Móvil</span>
+            <div class="line-fill print-data"></div>
+          </div>
+          <div class="payment-line" data-cal="pago-banco">
+            <span class="preprinted">Banco</span>
+            <div class="line-fill print-data"></div>
+          </div>
+        </div>
+
+        <!-- Columna 2: Ley del IVA / BCV -->
+        <div class="bcv-col">
+          <div class="bcv-text">
+            <span class="preprinted">Para cumplir con el Art. 25 de la ley del</span><br />
+            <span class="preprinted">IVA, se expresan los montos en Bs.</span><br />
+            <span class="preprinted">aplicando la tasa de cambio</span><span class="inline-line print-data" data-cal="bcv-tasa"></span><br />
+            <span class="preprinted">establecida por el BCV.</span>
+          </div>
+          <div class="divisas-line">
+            <span class="preprinted">Monto Recibido en Divisas:</span>
+            <div class="line-fill print-data" data-cal="bcv-divisas"></div>
+          </div>
+        </div>
+
+        <!-- Columna 3: Etiquetas de Totales -->
+        <div class="totals-labels-col">
+          <div class="tot-row-label h-base preprinted">BASE Bs.</div>
+          <div class="tot-row-label h-otros preprinted">OTROS Bs.</div>
+          <div class="tot-row-label h-iva">
+            <div class="iva-line-container">
+              <span class="preprinted iva-lbl">I.V.A.</span>
+              <span class="blank-pct print-data" data-cal="tot-iva-pct"></span>
+              <span class="preprinted iva-lbl iva-lbl-2">% Bs.</span>
+              <span class="blank-monto print-data" data-cal="tot-iva-base"></span>
+            </div>
+          </div>
+          <div class="tot-row-label h-igtf">
+            <div class="igtf-main">
+              <span class="preprinted igtf-lbl">3% IGTF Bs.</span>
+              <span class="blank-monto print-data" data-cal="tot-igtf-base"></span>
+            </div>
+            <div class="igtf-sub preprinted">S/Prov. SNAT/2022/000013 del 03/03/2022</div>
+          </div>
+          <div class="tot-row-label h-total preprinted">TOTAL A PAGAR Bs.</div>
+        </div>
+
+        <!-- Columna 4: Casillas de Totales -->
+        <div class="totals-values-col print-data">
+          <div class="tot-val-cell h-base" data-cal="tot-base"></div>
+          <div class="tot-val-cell h-otros" data-cal="tot-otros"></div>
+          <div class="tot-val-cell h-iva" data-cal="tot-iva"></div>
+          <div class="tot-val-cell h-igtf" data-cal="tot-igtf"></div>
+          <div class="tot-val-cell" data-cal="tot-total"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== PIE DE IMPRENTA Y CONTROL (PREIMPRESO) ==================== -->
+    <footer class="footer-area preprinted">
+      <div class="imprenta-left">
+        <div class="imprenta-box">
+          <div class="imp-col imp-logo">
+            <svg width="22" height="20" viewBox="0 0 28 24" style="position:absolute; left:2px; top:3px;">
+              <path d="M9,3 L22,3 L17,14 L4,14 Z" fill="none" stroke="#111" stroke-width="1.3"/>
+              <path d="M2,17 C7,20 15,20 25,16" fill="none" stroke="#111" stroke-width="1.2"/>
+            </svg>
+            <span class="imp-logo-text">La Tarjeta<small>C.A</small></span>
+          </div>
+          <div class="imp-col imp-address">
+            <div>Calle Aripao, Edificio León, Piso PB, Oficina S/N, Sector Castillito, Pto. Ordaz,</div>
+            <div>Edo. Bolívar, Telf.: 9223844, RIF.: J-095076555, N° de Providencia del Seniat/08/00141</div>
+            <div>de fecha 06/02/2008, Región Guayana</div>
+          </div>
+          <div class="imp-col imp-split-col">
+            <div class="imp-split-top">Fecha</div>
+            <div class="imp-split-bottom imp-date-val">30-07-2026</div>
+          </div>
+          <div class="imp-col imp-split-col">
+            <div class="imp-split-top">N° de Factura</div>
+            <div class="imp-split-bottom">
+              <span>desde el N° 00001</span>
+              <span>hasta el N° 00050</span>
+            </div>
+          </div>
+          <div class="imp-col imp-split-col">
+            <div class="imp-split-top">N° de Control</div>
+            <div class="imp-split-bottom">
+              <span>desde el N° 00-0000001</span>
+              <span>hasta el N° 00-0000050</span>
+            </div>
+          </div>
+        </div>
+        <div class="copies-legend">
+          <span>ORIGINAL BLANCA: CLIENTE</span>
+          <span>COPIA DE COLOR SIN DERECHO A CRÉDITO FISCAL</span>
+        </div>
+      </div>
+
+      <div class="control-right">
+        <div class="control-title">N° DE CONTROL</div>
+        <div class="control-prefix">00-0000014</div>
+      </div>
+    </footer>
+  </div>
+</span>

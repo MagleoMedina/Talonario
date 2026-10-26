@@ -173,7 +173,7 @@
       /* Asegurar que únicamente los datos a imprimir sean visibles y en negro puro */
       .print-data {
         visibility: visible !important;
-        color: purple !important;
+        color: black !important;
       }
     }
 
@@ -330,6 +330,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      overflow: hidden;
     }
 
     .emission-values > div:last-child {
@@ -338,6 +339,11 @@
 
     .lugar-text {
       font-size: 8.5pt;
+      display: block;
+      max-width: 100%;
+      line-height: 1.12;
+      text-align: center;
+      overflow-wrap: break-word;
     }
 
     .sub-ticks {
@@ -416,6 +422,7 @@
       font-family: "Arial Narrow", Arial, sans-serif;
       font-size: 9.2pt;
       color: #111;
+      overflow: hidden;
     }
 
     .client-row:last-child {
@@ -429,9 +436,19 @@
       align-items: center;
     }
 
+    .client-row > .preprinted,
+    .client-row-split .preprinted {
+      flex: 0 0 auto;
+      white-space: nowrap;
+    }
+
     .client-val {
       font-size: 9.2pt;
       margin-left: 2mm;
+      flex: 1 1 auto;
+      min-width: 0;
+      line-height: 1.15;
+      overflow: hidden;
     }
 
     /* ==================== TABLA PRINCIPAL + TOTALES ==================== */
@@ -567,12 +584,15 @@
     .line-fill {
       flex: 1;
       border-bottom: 1px solid #111;
-      height: 3.8mm;
+      height: 9.0mm;
+      min-height: 3.8mm;
       margin-bottom: 0.5mm;
       display: flex;
       align-items: flex-end;
       padding-left: 1mm;
       font-size: 7.2pt;
+      min-width: 0;
+      overflow: hidden;
     }
 
     .bcv-col {
@@ -593,6 +613,7 @@
       border-bottom: 1px solid #111;
       font-size: 8pt;
       line-height: 1;
+      overflow: hidden;
     }
 
     .divisas-line {
@@ -653,6 +674,26 @@
       width: 100%;
       justify-content: flex-end;
     }
+
+    /* Los rótulos reservan su espacio y quedan a la izquierda:
+       así el dato (desplazado por la calibración) nunca cae encima del texto */
+    .iva-lbl {
+      flex: 0 0 14mm;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    .iva-lbl-2 { flex: 0 0 13mm; }
+
+    .igtf-lbl {
+      display: inline-block;
+      width: 17mm;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    /* La caja de divisas necesita más alto: el texto nunca debe quedar cortado a la mitad */
+    .bcv-col .line-fill { min-height: 4.4mm; }
 
     .blank-pct {
       display: inline-block;
@@ -870,8 +911,23 @@
 
     /* El texto de cada celda de datos se envuelve en .cal-cell para moverlo sin arrastrar los bordes ni los encabezados */
     .items-table .cal-cell {
-      display: inline-block;
+      display: block;
       width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Los datos que viven dentro de una caja también se recortan, nunca invaden al vecino */
+    .tot-val-cell .cal-cell,
+    .blank-pct .cal-cell,
+    .blank-monto .cal-cell,
+    .line-fill .cal-cell,
+    .inline-line .cal-cell {
+      display: block;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .items-table tbody td:nth-child(1) .cal-cell { transform: translate(var(--cal-renglon-x), var(--cal-renglon-y)); }
@@ -1120,7 +1176,7 @@
       position: fixed;
       top: 0;
       right: 0;
-      width: 460px;
+      width: 560px;
       max-width: 96vw;
       height: 100vh;
       z-index: 600;
@@ -1136,9 +1192,9 @@
     .data-panel.open { transform: translateX(0); }
 
     /* Desplaza la hoja para dejar visible la vista previa completa */
-    body.data-open { padding-right: 460px; }
+    body.data-open { padding-right: 560px; }
 
-    @media (max-width: 1300px) {
+    @media (max-width: 1400px) {
       body.data-open { padding-right: 0; }
     }
 
@@ -1266,15 +1322,47 @@
     .d-rows {
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 2px;
     }
 
     .d-row {
-      display: grid;
-      grid-template-columns: 40px minmax(0, 1fr) 42px 62px 22px 66px;
+      display: flex;
+      flex-direction: column;
       gap: 4px;
-      align-items: center;
+      padding: 7px 0;
+      border-bottom: 1px solid #2b2b2b;
     }
+
+    .d-line1 {
+      display: grid;
+      grid-template-columns: 46px minmax(0, 1fr);
+      gap: 6px;
+    }
+
+    .d-line2 {
+      display: grid;
+      grid-template-columns: 84px 132px 32px 142px;
+      gap: 6px;
+      padding-left: 52px;
+    }
+
+    .d-mini {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      min-width: 0;
+    }
+
+    .d-mini > span {
+      flex: 0 0 auto;
+      font: 700 9px Arial, sans-serif;
+      letter-spacing: .3px;
+      color: #8e8e8e;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .d-mini input { flex: 1 1 auto; }
 
     .d-row .d-ren {
       text-align: center;
@@ -1296,7 +1384,7 @@
       border-color: #E1A413;
     }
 
-    .d-row input[type="checkbox"] { width: 14px; height: 14px; padding: 0; }
+    .d-row input[type="checkbox"] { width: 14px; height: 14px; padding: 0; flex: 0 0 auto; }
 
     .d-row .d-monto {
       font: 700 11px Arial, sans-serif;
@@ -1308,21 +1396,29 @@
     }
 
     .d-rows-head {
+      margin-bottom: 6px;
+    }
+
+    .d-rows-head .d-line1 {
       display: grid;
-      grid-template-columns: 40px minmax(0, 1fr) 42px 62px 22px 66px;
-      gap: 4px;
-      margin-bottom: 4px;
+      grid-template-columns: 46px minmax(0, 1fr);
+      gap: 6px;
+    }
+
+    .d-rows-head .d-line2 {
+      display: grid;
+      grid-template-columns: 84px 132px 32px 142px;
+      gap: 6px;
+      padding-left: 52px;
+    }
+
+    .d-rows-head span {
       font: 700 9px Arial, sans-serif;
       letter-spacing: .3px;
       color: #8b8b8b;
       text-transform: uppercase;
+      white-space: nowrap;
     }
-
-    .d-rows-head span:nth-child(1) { text-align: center; }
-    .d-rows-head span:nth-child(3),
-    .d-rows-head span:nth-child(4),
-    .d-rows-head span:nth-child(6) { text-align: right; }
-    .d-rows-head span:nth-child(5) { text-align: center; }
 
     .data-hint {
       margin-top: 8px;
@@ -1459,7 +1555,8 @@
       <div class="d-group">
         <h4>Renglones</h4>
         <div class="d-rows-head">
-          <span>#</span><span>Descripción</span><span>Cant.</span><span>Precio</span><span>E</span><span>Monto</span>
+          <div class="d-line1"><span>N°</span><span>Descripción</span></div>
+          <div class="d-line2"><span>Cant.</span><span>Precio</span><span>E</span><span>Monto</span></div>
         </div>
         <div class="d-rows" id="d-rows"></div>
         <p class="data-hint">Escribe el N° de renglón y el Monto a mano; no se generan ni se calculan.</p>
@@ -1802,15 +1899,15 @@
           <div class="tot-row-label h-otros preprinted">OTROS Bs.</div>
           <div class="tot-row-label h-iva">
             <div class="iva-line-container">
-              <span class="preprinted">I.V.A.</span>
+              <span class="preprinted iva-lbl">I.V.A.</span>
               <span class="blank-pct print-data" data-cal="tot-iva-pct"></span>
-              <span class="preprinted">% SOBRE Bs.</span>
+              <span class="preprinted iva-lbl iva-lbl-2">% Bs.</span>
               <span class="blank-monto print-data" data-cal="tot-iva-base"></span>
             </div>
           </div>
           <div class="tot-row-label h-igtf">
             <div class="igtf-main">
-              <span class="preprinted">3% IGTF Bs.</span>
+              <span class="preprinted igtf-lbl">3% IGTF Bs.</span>
               <span class="blank-monto print-data" data-cal="tot-igtf-base"></span>
             </div>
             <div class="igtf-sub preprinted">S/Prov. SNAT/2022/000013 del 03/03/2022</div>
@@ -2371,12 +2468,20 @@
         var html = '';
         for (var i = 1; i <= ROWS; i++) {
           html += '<div class="d-row" data-row="' + i + '">' +
-            '<input class="d-ren" type="text" autocomplete="off" placeholder="" />' +
-            '<input class="d-desc" type="text" autocomplete="off" placeholder="Descripción" />' +
-            '<input class="d-cant" type="text" inputmode="decimal" placeholder="0" />' +
-            '<input class="d-precio" type="text" inputmode="decimal" placeholder="0,00" />' +
-            '<input class="d-e" type="checkbox" title="Exento" />' +
-            '<input class="d-monto" type="text" inputmode="decimal" placeholder="0,00" />' +
+            '<div class="d-line1">' +
+              '<input class="d-ren" type="text" autocomplete="off" placeholder="N°" />' +
+              '<input class="d-desc" type="text" autocomplete="off" placeholder="Descripción" />' +
+            '</div>' +
+            '<div class="d-line2">' +
+              '<label class="d-mini"><span>Cant.</span>' +
+                '<input class="d-cant" type="text" inputmode="decimal" placeholder="0" /></label>' +
+              '<label class="d-mini"><span>Precio</span>' +
+                '<input class="d-precio" type="text" inputmode="decimal" placeholder="0,00" /></label>' +
+              '<label class="d-mini"><span>E</span>' +
+                '<input class="d-e" type="checkbox" title="Exento" /></label>' +
+              '<label class="d-mini"><span>Monto</span>' +
+                '<input class="d-monto" type="text" inputmode="decimal" placeholder="0,00" /></label>' +
+            '</div>' +
             '</div>';
         }
         wrap.innerHTML = html;
@@ -2545,6 +2650,90 @@
         try { localStorage.setItem(DATA_KEY, JSON.stringify(collect())); } catch (e) {}
       }
 
+      /* ===== AJUSTE DE FUENTE: el dato se reduce hasta que quepa en su caja ===== */
+      var fitCache = new WeakMap();
+
+      function fitCell(cell, box, maxPt, minPt, allowWrap) {
+        if (!cell || !box) return;
+
+        var key = cell.textContent + '|' + maxPt + '|' + minPt;
+        if (fitCache.get(cell) === key) return;
+        fitCache.set(cell, key);
+
+        var cs = getComputedStyle(box);
+        var avail = box.clientWidth - (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.paddingRight) || 0);
+
+        // Si el dato comparte fila con un rótulo, el ancho útil es lo que queda.
+        if (box === cell.parentElement) {
+          var pcs = getComputedStyle(box);
+          if (pcs.display.indexOf('flex') === 0 && pcs.flexDirection.indexOf('row') === 0) {
+            Array.prototype.forEach.call(box.children, function (c) {
+              if (c !== cell) avail -= c.offsetWidth;
+            });
+          }
+        }
+
+        if (!(avail > 4)) return;
+
+        cell.style.whiteSpace = 'nowrap';
+        cell.style.fontSize = maxPt + 'pt';
+
+        var w = cell.scrollWidth;
+        if (w <= avail + 0.5) return;
+
+        var size = Math.max(minPt, Math.round(maxPt * (avail / w) * 10) / 10);
+        cell.style.fontSize = size + 'pt';
+
+        if (cell.scrollWidth > avail + 0.5) {
+          if (allowWrap) {
+            // Sigue sin caber en una línea: se deja envolver dentro de la caja.
+            cell.style.fontSize = '';
+            cell.style.whiteSpace = '';
+          } else {
+            cell.style.fontSize = minPt + 'pt';
+          }
+        }
+      }
+
+      function fitAll() {
+        var lugar = document.querySelector('.top-bar .lugar-text');
+        if (lugar) fitCell(lugar, lugar.parentNode, 8.5, 5.5, true);
+
+        Array.prototype.forEach.call(document.querySelectorAll('.client-box .client-val'), function (el) {
+          fitCell(el, el.parentNode, 9.2, 6, true);
+        });
+
+        Array.prototype.forEach.call(document.querySelectorAll('.items-table tbody td'), function (td) {
+          var cell = td.querySelector('.cal-cell');
+          if (cell) fitCell(cell, td, 8.4, 5.5, false);
+        });
+
+        Array.prototype.forEach.call(document.querySelectorAll('.payment-col .line-fill, .bcv-col .line-fill'), function (box) {
+          var cell = box.querySelector('.cal-cell');
+          if (cell) fitCell(cell, box, 7.2, 4.5, false);
+        });
+
+        var inline = document.querySelector('.bcv-col .inline-line');
+        if (inline) {
+          var inlineCell = inline.querySelector('.cal-cell');
+          if (inlineCell) fitCell(inlineCell, inline, 8, 5.5, false);
+        }
+
+        var totCells = document.querySelectorAll('.totals-values-col .tot-val-cell');
+        Array.prototype.forEach.call(totCells, function (box, i) {
+          var cell = box.querySelector('.cal-cell');
+          if (cell) fitCell(cell, box, i === totCells.length - 1 ? 9 : 8.4, 6, false);
+        });
+
+        Array.prototype.forEach.call(
+          document.querySelectorAll('.totals-labels-col .blank-pct, .totals-labels-col .blank-monto'),
+          function (box) {
+            var cell = box.querySelector('.cal-cell');
+            if (cell) fitCell(cell, box, 7.5, 5.5, false);
+          }
+        );
+      }
+
       function render() {
         // Emisión
         text(document.querySelector('.top-bar .lugar-text'), val('d-lugar'));
@@ -2605,6 +2794,7 @@
         text(slot(document.querySelector('.bcv-col .inline-line')), val('d-tasa'));
         text(slot(document.querySelector('.bcv-col .line-fill')), val('d-divisas'));
 
+        fitAll();
         persist();
       }
 
@@ -2662,7 +2852,10 @@
           });
 
         document.querySelectorAll('#dataPanel input, #dataPanel textarea').forEach(function (el) {
-          el.addEventListener('input', render);
+          el.addEventListener('input', function () {
+            this.title = this.value;
+            render();
+          });
           el.addEventListener('change', render);
         });
 

@@ -1,9 +1,3 @@
-<!DOCTYPE html>
-<html lang="es"><head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Impresión sobre Talonario - SPEED GROUPS C.A.</title>
-  <style>
     @page {
       size: letter portrait;
       margin: 0;
@@ -17,22 +11,22 @@
       /* ===== Calibración independiente por sección (mm) ===== */
       --cal-header-x: 0mm;
       --cal-header-y: 0mm;
-      --cal-emision-x: 0.8mm;
+      --cal-emision-x: 1.3mm;
       --cal-emision-y: 0.9mm;
       --cal-cliente-x: 1.5mm;
       --cal-cliente-y: -0.6mm;
       --cal-renglon-x: 2.2mm;
       --cal-renglon-y: 0mm;
       --cal-desc-x: 2.2mm;
-      --cal-desc-y: -0.3mm;
+      --cal-desc-y: 0mm;
       --cal-cant-x: -0.2mm;
-      --cal-cant-y: -0.2mm;
+      --cal-cant-y: 0mm;
       --cal-precio-x: -2.5mm;
-      --cal-precio-y: -0.2mm;
+      --cal-precio-y: 0mm;
       --cal-exento-x: -0.8mm;
       --cal-exento-y: -0.2mm;
       --cal-monto-x: -2.5mm;
-      --cal-monto-y: -0.2mm;
+      --cal-monto-y: 0mm;
       --cal-pago-x: 2.5mm;
       --cal-pago-y: -1mm;
       --cal-bcv-x: 2.5mm;
@@ -41,6 +35,40 @@
       --cal-totlabels-y: 0.5mm;
       --cal-totvals-x: -2.5mm;
       --cal-totvals-y: 0mm;
+
+      /* ===== Items individuales de los bloques (mm) ===== */
+      --cal-pago-efectivo-x: 2.5mm;
+      --cal-pago-efectivo-y: -1mm;
+      --cal-pago-debito-x: 2.5mm;
+      --cal-pago-debito-y: -1mm;
+      --cal-pago-credito-x: 2.5mm;
+      --cal-pago-credito-y: -1mm;
+      --cal-pago-transferencia-x: 2.5mm;
+      --cal-pago-transferencia-y: -1mm;
+      --cal-pago-movil-x: 2.5mm;
+      --cal-pago-movil-y: -1mm;
+      --cal-pago-banco-x: 2.5mm;
+      --cal-pago-banco-y: -1mm;
+      --cal-bcv-tasa-x: 2.5mm;
+      --cal-bcv-tasa-y: 0mm;
+      --cal-bcv-divisas-x: 2.5mm;
+      --cal-bcv-divisas-y: 0mm;
+      --cal-tot-iva-pct-x: -3mm;
+      --cal-tot-iva-pct-y: 0.5mm;
+      --cal-tot-iva-base-x: -3mm;
+      --cal-tot-iva-base-y: 0.5mm;
+      --cal-tot-igtf-base-x: -3mm;
+      --cal-tot-igtf-base-y: 0.5mm;
+      --cal-tot-base-x: -2.5mm;
+      --cal-tot-base-y: 0mm;
+      --cal-tot-otros-x: -2.5mm;
+      --cal-tot-otros-y: 0mm;
+      --cal-tot-iva-x: -2.5mm;
+      --cal-tot-iva-y: 0mm;
+      --cal-tot-igtf-x: -2.5mm;
+      --cal-tot-igtf-y: 0mm;
+      --cal-tot-total-x: -2.5mm;
+      --cal-tot-total-y: 0mm;
       --cal-footer-x: 0mm;
       --cal-footer-y: 0mm;
     }
@@ -135,10 +163,22 @@
       .preprinted {
         visibility: hidden !important;
       }
-      /* Asegurar que únicamente los datos a imprimir sean visibles y en negro puro */
+      /* Asegurar que únicamente los datos a imprimir sean visibles */
       .print-data {
         visibility: visible !important;
-        color: #000000 !important;
+        color: black !important;
+      }
+
+      /* Evitar que filas y secciones se partan entre páginas */
+      .items-table tr,
+      .header,
+      .top-bar,
+      .client-box,
+      .main-table-wrapper,
+      .bottom-section,
+      .footer-area {
+        break-inside: avoid;
+        page-break-inside: avoid;
       }
     }
 
@@ -295,6 +335,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      overflow: hidden;
     }
 
     .emission-values > div:last-child {
@@ -303,6 +344,11 @@
 
     .lugar-text {
       font-size: 8.5pt;
+      display: block;
+      max-width: 100%;
+      line-height: 1.12;
+      text-align: center;
+      overflow-wrap: break-word;
     }
 
     .sub-ticks {
@@ -381,6 +427,7 @@
       font-family: "Arial Narrow", Arial, sans-serif;
       font-size: 9.2pt;
       color: #111;
+      overflow: hidden;
     }
 
     .client-row:last-child {
@@ -394,9 +441,24 @@
       align-items: center;
     }
 
+    .client-row > .preprinted,
+    .client-row-split .preprinted {
+      flex: 0 0 auto;
+      white-space: nowrap;
+    }
+
     .client-val {
       font-size: 9.2pt;
       margin-left: 2mm;
+      flex: 1 1 auto;
+      min-width: 0;
+      line-height: 1.15;
+      overflow: hidden;
+    }
+
+    /* Domicilio fiscal: -20% */
+    .client-row:nth-child(2) .client-val {
+      font-size: 7.4pt;
     }
 
     /* ==================== TABLA PRINCIPAL + TOTALES ==================== */
@@ -452,12 +514,18 @@
       font-size: 8.4pt;
       vertical-align: middle;
       white-space: nowrap;
-      overflow: hidden;
+      overflow: visible;
       text-overflow: ellipsis;
     }
 
     .items-table tbody td:last-child {
       border-right: none;
+    }
+
+    /* Precio de venta unitario (col 4) y Monto (col 6): -20% */
+    .items-table tbody td:nth-child(4),
+    .items-table tbody td:nth-child(6) {
+      font-size: 6.7pt;
     }
 
     .items-table tbody tr:last-child td {
@@ -532,12 +600,15 @@
     .line-fill {
       flex: 1;
       border-bottom: 1px solid #111;
-      height: 3.8mm;
+      height: 9.0mm;
+      min-height: 3.8mm;
       margin-bottom: 0.5mm;
       display: flex;
       align-items: flex-end;
       padding-left: 1mm;
-      font-size: 7.2pt;
+      font-size: 14pt;
+      min-width: 0;
+      overflow: hidden;
     }
 
     .bcv-col {
@@ -554,10 +625,12 @@
       display: inline-flex;
       justify-content: center;
       align-items: flex-end;
-      width: 14mm;
+      width: auto;
+      min-width: 14mm;
       border-bottom: 1px solid #111;
       font-size: 8pt;
-      line-height: 1;
+      line-height: 1.25;
+      overflow: hidden;
     }
 
     .divisas-line {
@@ -619,6 +692,26 @@
       justify-content: flex-end;
     }
 
+    /* Los rótulos reservan su espacio y quedan a la izquierda:
+       así el dato (desplazado por la calibración) nunca cae encima del texto */
+    .iva-lbl {
+      flex: 0 0 14mm;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    .iva-lbl-2 { flex: 0 0 13mm; }
+
+    .igtf-lbl {
+      display: inline-block;
+      width: 17mm;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    /* La caja de divisas necesita más alto: el texto nunca debe quedar cortado a la mitad */
+    .bcv-col .line-fill { min-height: 4.4mm; font-size: 8.6pt; }
+
     .blank-pct {
       display: inline-block;
       width: 9mm;
@@ -662,13 +755,13 @@
       align-items: center;
       justify-content: flex-end;
       padding: 0 1.5mm;
-      font-size: 8.4pt;
+      font-size: 6.7pt;
     }
 
     .tot-val-cell:last-child {
       border-bottom: none;
       flex: 1;
-      font-size: 9pt;
+      font-size: 7.2pt;
       font-weight: 900;
     }
 
@@ -796,14 +889,10 @@
       line-height: 1;
     }
 
-    /* ==================== CALIBRACIÓN INDEPENDIENTE POR SECCIÓN ==================== */
-    /* Solo se desplaza el dato impreso (.print-data). Los rótulos preimpresos quedan fijos. */
+    /* ==================== CALIBRACIÓN INDEPENDIENTE POR SECCIÓN / ITEM ==================== */
+    /* Solo se desplaza el dato impreso. Los rótulos, líneas y bordes preimpresos quedan fijos. */
     .top-bar .print-data,
-    .client-box .print-data,
-    .payment-col .print-data,
-    .bcv-col .print-data,
-    .totals-labels-col .print-data,
-    .totals-values-col {
+    .client-box .print-data {
       position: relative;
     }
 
@@ -817,30 +906,53 @@
       top: var(--cal-cliente-y);
     }
 
-    .payment-col .print-data {
-      left: var(--cal-pago-x);
-      top: var(--cal-pago-y);
-    }
+    /* Cada item se mueve por separado */
+    .cal-cell { display: inline-block; }
 
-    .bcv-col .print-data {
-      left: var(--cal-bcv-x);
-      top: var(--cal-bcv-y);
-    }
-
-    .totals-labels-col .print-data {
-      left: var(--cal-totlabels-x);
-      top: var(--cal-totlabels-y);
-    }
-
-    .totals-values-col {
-      left: var(--cal-totvals-x);
-      top: var(--cal-totvals-y);
-    }
+    .cal-it-pago-efectivo { transform: translate(var(--cal-pago-efectivo-x), var(--cal-pago-efectivo-y)); }
+    .cal-it-pago-debito { transform: translate(var(--cal-pago-debito-x), var(--cal-pago-debito-y)); }
+    .cal-it-pago-credito { transform: translate(var(--cal-pago-credito-x), var(--cal-pago-credito-y)); }
+    .cal-it-pago-transferencia { transform: translate(var(--cal-pago-transferencia-x), var(--cal-pago-transferencia-y)); }
+    .cal-it-pago-movil { transform: translate(var(--cal-pago-movil-x), var(--cal-pago-movil-y)); }
+    .cal-it-pago-banco { transform: translate(var(--cal-pago-banco-x), var(--cal-pago-banco-y)); }
+    .cal-it-bcv-tasa { transform: translate(var(--cal-bcv-tasa-x), var(--cal-bcv-tasa-y)); }
+    .cal-it-bcv-divisas { transform: translate(var(--cal-bcv-divisas-x), var(--cal-bcv-divisas-y)); }
+    .cal-it-tot-iva-pct { transform: translate(var(--cal-tot-iva-pct-x), var(--cal-tot-iva-pct-y)); }
+    .cal-it-tot-iva-base { transform: translate(var(--cal-tot-iva-base-x), var(--cal-tot-iva-base-y)); }
+    .cal-it-tot-igtf-base { transform: translate(var(--cal-tot-igtf-base-x), var(--cal-tot-igtf-base-y)); }
+    .cal-it-tot-base { transform: translate(var(--cal-tot-base-x), var(--cal-tot-base-y)); }
+    .cal-it-tot-otros { transform: translate(var(--cal-tot-otros-x), var(--cal-tot-otros-y)); }
+    .cal-it-tot-iva { transform: translate(var(--cal-tot-iva-x), var(--cal-tot-iva-y)); }
+    .cal-it-tot-igtf { transform: translate(var(--cal-tot-igtf-x), var(--cal-tot-igtf-y)); }
+    .cal-it-tot-total { transform: translate(var(--cal-tot-total-x), var(--cal-tot-total-y)); }
 
     /* El texto de cada celda de datos se envuelve en .cal-cell para moverlo sin arrastrar los bordes ni los encabezados */
     .items-table .cal-cell {
-      display: inline-block;
+      display: block;
       width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.25;
+    }
+
+    /* Los datos que viven dentro de una caja también se recortan, nunca invaden al vecino */
+    .tot-val-cell .cal-cell,
+    .blank-pct .cal-cell,
+    .blank-monto .cal-cell,
+    .line-fill .cal-cell,
+    .inline-line .cal-cell {
+      display: block;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* La tasa cambiaria necesita aire para los descendentes (g, p, y) y no debe cortar dígitos */
+    .inline-line .cal-cell {
+      line-height: 1.25;
+      overflow: visible;
+      text-overflow: clip;
     }
 
     .items-table tbody td:nth-child(1) .cal-cell { transform: translate(var(--cal-renglon-x), var(--cal-renglon-y)); }
@@ -930,6 +1042,21 @@
       color: #E1A413;
       border-left-color: #E1A413;
       font-weight: 700;
+    }
+
+    .cal-nav-group {
+      display: block;
+      padding: 12px 16px 5px;
+      font: 700 10px Arial, sans-serif;
+      letter-spacing: .7px;
+      text-transform: uppercase;
+      color: #E1A413;
+      opacity: .9;
+    }
+
+    .cal-sections a.cal-nav-item {
+      padding-left: 30px;
+      font-size: 12px;
     }
 
     .cal-controls {
@@ -1074,7 +1201,7 @@
       position: fixed;
       top: 0;
       right: 0;
-      width: 460px;
+      width: 560px;
       max-width: 96vw;
       height: 100vh;
       z-index: 600;
@@ -1090,9 +1217,9 @@
     .data-panel.open { transform: translateX(0); }
 
     /* Desplaza la hoja para dejar visible la vista previa completa */
-    body.data-open { padding-right: 460px; }
+    body.data-open { padding-right: 560px; }
 
-    @media (max-width: 1300px) {
+    @media (max-width: 1400px) {
       body.data-open { padding-right: 0; }
     }
 
@@ -1180,7 +1307,8 @@
     .d-field.full { grid-column: 1 / -1; }
 
     .d-field input,
-    .d-field textarea {
+    .d-field textarea,
+    .d-field select {
       width: 100%;
       background: #2a2a2a;
       border: 1px solid #444;
@@ -1191,10 +1319,39 @@
     }
 
     .d-field input:focus,
-    .d-field textarea:focus {
+    .d-field textarea:focus,
+    .d-field select:focus {
       outline: 1px solid #E1A413;
       border-color: #E1A413;
     }
+
+    .d-empresa-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .d-empresa-actions button {
+      flex: 1;
+      border: none;
+      border-radius: 6px;
+      padding: 9px 6px;
+      font: 700 12px Arial, sans-serif;
+      cursor: pointer;
+      background: #3a3a3a;
+      color: #eee;
+    }
+
+    .d-empresa-actions button:hover { background: #4a4a4a; }
+
+    .d-empresa-msg {
+      min-height: 0;
+      margin-top: 6px;
+      font: 11px Arial, sans-serif;
+      color: #8fd18f;
+    }
+
+    .d-empresa-msg:empty { display: none; }
 
     .d-field textarea {
       resize: vertical;
@@ -1220,15 +1377,47 @@
     .d-rows {
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 2px;
     }
 
     .d-row {
-      display: grid;
-      grid-template-columns: 40px minmax(0, 1fr) 42px 62px 22px 66px;
+      display: flex;
+      flex-direction: column;
       gap: 4px;
-      align-items: center;
+      padding: 7px 0;
+      border-bottom: 1px solid #2b2b2b;
     }
+
+    .d-line1 {
+      display: grid;
+      grid-template-columns: 46px minmax(0, 1fr);
+      gap: 6px;
+    }
+
+    .d-line2 {
+      display: grid;
+      grid-template-columns: 84px 132px 32px 142px;
+      gap: 6px;
+      padding-left: 52px;
+    }
+
+    .d-mini {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      min-width: 0;
+    }
+
+    .d-mini > span {
+      flex: 0 0 auto;
+      font: 700 9px Arial, sans-serif;
+      letter-spacing: .3px;
+      color: #8e8e8e;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .d-mini input { flex: 1 1 auto; }
 
     .d-row .d-ren {
       text-align: center;
@@ -1250,7 +1439,7 @@
       border-color: #E1A413;
     }
 
-    .d-row input[type="checkbox"] { width: 14px; height: 14px; padding: 0; }
+    .d-row input[type="checkbox"] { width: 14px; height: 14px; padding: 0; flex: 0 0 auto; }
 
     .d-row .d-monto {
       font: 700 11px Arial, sans-serif;
@@ -1262,21 +1451,29 @@
     }
 
     .d-rows-head {
+      margin-bottom: 6px;
+    }
+
+    .d-rows-head .d-line1 {
       display: grid;
-      grid-template-columns: 40px minmax(0, 1fr) 42px 62px 22px 66px;
-      gap: 4px;
-      margin-bottom: 4px;
+      grid-template-columns: 46px minmax(0, 1fr);
+      gap: 6px;
+    }
+
+    .d-rows-head .d-line2 {
+      display: grid;
+      grid-template-columns: 84px 132px 32px 142px;
+      gap: 6px;
+      padding-left: 52px;
+    }
+
+    .d-rows-head span {
       font: 700 9px Arial, sans-serif;
       letter-spacing: .3px;
       color: #8b8b8b;
       text-transform: uppercase;
+      white-space: nowrap;
     }
-
-    .d-rows-head span:nth-child(1) { text-align: center; }
-    .d-rows-head span:nth-child(3),
-    .d-rows-head span:nth-child(4),
-    .d-rows-head span:nth-child(6) { text-align: right; }
-    .d-rows-head span:nth-child(5) { text-align: center; }
 
     .data-hint {
       margin-top: 8px;
@@ -1291,380 +1488,21 @@
       .data-toggle { display: none !important; }
       .cal-target { outline: none !important; }
     }
-  </style>
-</head>
-<body>
+  /*YOOOOOOOOO*/
+/* Corrección para que la tasa del BCV no se corte al imprimir */
+.bcv-col .inline-line {
+  min-height: 4.5mm;
+  height: auto !important;
+  overflow: visible !important;
+  display: inline-flex;
+  align-items: flex-end;
+}
 
-  <!-- BARRA DE CALIBRACIÓN Y PRUEBA (NO SE IMPRIME) -->
-  <div class="toolbar">
-    <button type="button" onclick="document.body.classList.toggle('preview-print-only')">
-      Alternar Vista: Guía / Solo Impresión
-    </button>
-    <label>
-      Offset X (mm):
-      <input type="number" step="0.5" value="0" oninput="document.documentElement.style.setProperty('--offset-x', this.value + 'mm')">
-    </label>
-    <label>
-      Offset Y (mm):
-      <input type="number" step="0.5" value="0" oninput="document.documentElement.style.setProperty('--offset-y', this.value + 'mm')">
-    </label>
-    <button type="button" onclick="window.print()">Imprimir (Ctrl+P)</button>
-  </div>
+.inline-line .cal-cell {
+  line-height: 1.35 !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  padding-bottom: 1px; /* Otorga espacio extra en la base */
+  white-space: nowrap;
+}
 
-  <!-- ==================== PANEL DE CALIBRACIÓN POR SECCIÓN (NO SE IMPRIME) ==================== -->
-  
-
-  
-
-  <!-- ==================== PANEL DE DATOS A IMPRIMIR (NO SE IMPRIME) ==================== -->
-  
-
-  
-
-  <div class="page-letter">
-    <!-- ==================== ENCABEZADO (PREIMPRESO) ==================== -->
-    <header class="header preprinted">
-      <div class="logo-container">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="550 1820 3920 1350" preserveAspectRatio="xMinYMid meet">
-          <defs>
-            <style>
-              .sg-dark { fill: #414040; }
-              .sg-gold { fill: #E1A413; }
-              .sg-gold-alt { fill: #E4A924; }
-              .sg-charcoal { fill: #4B4949; }
-              .sg-groups { font-family: 'Arial Black', Arial, sans-serif; font-size: 195px; font-weight: 900; fill: #E1A413; }
-              .sg-ca { font-family: 'Arial Black', Arial, sans-serif; font-size: 175px; font-weight: 900; fill: #414040; }
-              .sg-rif { font-family: Arial, Helvetica, sans-serif; font-size: 96px; font-weight: 700; fill: #4B4949; letter-spacing: 24px; }
-            </style>
-          </defs>
-          <polygon class="sg-dark" points="1126,3111 624,2785 624,2174 1126,1850 1632,2174 1632,2660 1536,2596 1536,2228 1126,1964 720,2228 720,2730 1126,2994"></polygon>
-          <polygon class="sg-gold" points="1126,3111 1632,2785 1632,2720 1536,2655 1536,2730 1126,2994"></polygon>
-          <path class="sg-dark" d="M 1094,2256 L 840,2256 C 795,2256 778,2278 778,2320 L 778,2480 C 778,2525 798,2546 842,2546 L 1005,2546 L 1005,2648 L 818,2648 L 764,2738 L 1032,2738 C 1076,2738 1096,2714 1096,2670 L 1096,2512 C 1096,2468 1074,2448 1030,2448 L 868,2448 L 868,2352 L 1094,2352 Z"></path>
-          <path class="sg-dark" d="M 1474,2256 L 1134,2256 L 1134,2842 L 1474,2632 L 1474,2448 L 1310,2448 L 1265,2538 L 1382,2538 L 1382,2582 L 1222,2680 L 1222,2352 L 1474,2352 Z"></path>
-          <rect class="sg-dark" x="1798" y="1995" width="16" height="965" rx="6"></rect>
-          <path class="sg-dark" d="M 2380,2130 L 2015,2130 C 1960,2130 1938,2156 1938,2205 L 1938,2305 C 1938,2355 1962,2380 2018,2380 L 2285,2380 L 2285,2442 L 1942,2442 L 1942,2525 L 2312,2525 C 2372,2525 2396,2498 2396,2442 L 2396,2342 C 2396,2290 2372,2268 2312,2268 L 2048,2268 L 2048,2210 L 2380,2210 Z"></path>
-          <path class="sg-dark" d="M 2462,2525 L 2462,2130 L 2835,2130 C 2892,2130 2918,2158 2918,2212 L 2918,2328 C 2918,2382 2892,2410 2835,2410 L 2572,2410 L 2572,2525 Z M 2572,2212 L 2572,2328 L 2808,2328 L 2808,2212 Z"></path>
-          <path class="sg-dark" d="M 2988,2525 L 2988,2130 L 3398,2130 L 3398,2210 L 3098,2210 L 3098,2286 L 3365,2286 L 3365,2364 L 3098,2364 L 3098,2444 L 3398,2444 L 3398,2525 Z"></path>
-          <path class="sg-dark" d="M 3468,2525 L 3468,2130 L 3878,2130 L 3878,2210 L 3578,2210 L 3578,2286 L 3845,2286 L 3845,2364 L 3578,2364 L 3578,2444 L 3878,2444 L 3878,2525 Z"></path>
-          <path class="sg-dark" d="M 3948,2525 L 3948,2130 L 4310,2130 C 4378,2130 4408,2168 4408,2235 L 4408,2420 C 4408,2488 4378,2525 4310,2525 Z M 4058,2212 L 4058,2444 L 4295,2444 L 4295,2212 Z"></path>
-          <text class="sg-groups" x="1932" y="2768" textLength="1835" lengthAdjust="spacing">GROUPS</text>
-          <text class="sg-ca" x="3952" y="2768" letter-spacing="18">C.A</text>
-          <rect class="sg-gold-alt" x="1946" y="2908" width="510" height="11"></rect>
-          <text class="sg-rif" x="2525" y="2946">RIF J-508443900</text>
-          <rect class="sg-gold-alt" x="3878" y="2908" width="510" height="11"></rect>
-        </svg>
-      </div>
-
-      <div class="company-info">
-        <div class="company-title">SPEED GROUPS C.A.</div>
-        <div class="company-address">
-          AV CARACAS EDIF ROCAS DEL ORINOCO PISO 1 LOCAL S/N SECTOR UD-323,<br>
-          MANZANA 80, PARCELA 04 CIUDAD GUAYANA BOLIVAR<br>
-          ZONA POSTAL 8050 Telf.: (0412) 782.29.20 - Correo: speedgroupsca@gmail.com
-        </div>
-        <div class="company-rif">RIF.: J-50844390-0</div>
-      </div>
-    </header>
-
-    <!-- ==================== FECHA Y FACTURA N° ==================== -->
-    <section class="top-bar">
-      <div class="emission-box">
-        <div class="emission-headers preprinted">
-          <div>LUGAR Y FECHA DE EMISIÓN</div>
-          <div>DIA</div>
-          <div>MES</div>
-          <div>AÑO</div>
-        </div>
-        <div class="emission-values">
-          <div><span class="lugar-text print-data">PUERTO ORDAZ</span></div>
-          <div>
-            <div class="sub-ticks">
-              <span class="print-data">1</span>
-              <span class="print-data">3</span>
-            </div>
-          </div>
-          <div>
-            <div class="sub-ticks">
-              <span class="print-data">1</span>
-              <span class="print-data">0</span>
-            </div>
-          </div>
-          <div>
-            <div class="sub-ticks">
-              <span class="print-data">2</span>
-              <span class="print-data">0</span>
-              <span class="print-data">2</span>
-              <span class="print-data">6</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- El N° de Factura ya viene preimpreso en el talonario -->
-      <div class="factura-num-area preprinted">
-        <span class="factura-label">FACTURA Nº.</span>
-        <span class="serial-red">00014</span>
-      </div>
-    </section>
-
-    <!-- ==================== DATOS DEL CLIENTE ==================== -->
-    <section class="client-box">
-      <div class="client-row">
-        <span class="preprinted">Nombre o Razón Social:</span>
-        <span class="client-val print-data">CVG CABELUM C.A.</span>
-      </div>
-      <div class="client-row">
-        <span class="preprinted">Domicilio Fiscal:</span>
-        <span class="client-val print-data">ZONA INDUSTRIAL UNARE II, CALLE NEVERÍ, GALPÓN NRO. 14, PUERTO ORDAZ - EDO. BOLÍVAR</span>
-      </div>
-      <div class="client-row">
-        <div class="client-row-split">
-          <div>
-            <span class="preprinted">R.I.F. ó C.I.:</span>
-            <span class="client-val print-data">J-40125896-3</span>
-          </div>
-          <div>
-            <span class="preprinted">Teléfono:</span>
-            <span class="client-val print-data">(0286) 951.44.12</span>
-          </div>
-          <div>
-            <span class="preprinted">Condiciones de Pago:</span>
-            <span class="client-val print-data">CONTADO</span>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ==================== TABLA PRINCIPAL + TOTALES ==================== -->
-    <section class="main-table-wrapper">
-      <table class="items-table">
-        <colgroup>
-          <col class="col-renglon">
-          <col class="col-desc">
-          <col class="col-cant">
-          <col class="col-precio">
-          <col class="col-exento">
-          <col class="col-monto">
-        </colgroup>
-        <thead class="preprinted">
-          <tr>
-            <th class="th-renglon">RENGLÓN</th>
-            <th>DESCRIPCION</th>
-            <th class="th-cant">CANTIDAD</th>
-            <th class="th-precio">PRECIO DE<br>VENTA UNITARIO</th>
-            <th>( E )</th>
-            <th>MONTO</th>
-          </tr>
-        </thead>
-        <tbody class="print-data">
-          <!-- 24 renglones idénticos al físico -->
-          <tr>
-            <td class="td-center"><span class="cal-cell">01</span></td>
-            <td class=""><span class="cal-cell">TRASLADO PERSONAL OPERATIVO</span></td>
-            <td class="td-center"><span class="cal-cell">/</span></td>
-            <td class="td-right"><span class="cal-cell">3.200.145,45</span></td>
-            <td class="td-center"><span class="cal-cell">X</span></td>
-            <td class="td-right"><span class="cal-cell">3.200.145,45</span></td>
-          </tr>
-          <tr>
-            <td class="td-center"><span class="cal-cell"></span></td>
-            <td class=""><span class="cal-cell"></span></td>
-            <td class="td-center"><span class="cal-cell"></span></td>
-            <td class="td-right"><span class="cal-cell"></span></td>
-            <td class="td-center"><span class="cal-cell"></span></td>
-            <td class="td-right"><span class="cal-cell"></span></td>
-          </tr>
-          <tr>
-            <td class="td-center"><span class="cal-cell"></span></td>
-            <td class=""><span class="cal-cell"></span></td>
-            <td class="td-center"><span class="cal-cell"></span></td>
-            <td class="td-right"><span class="cal-cell"></span></td>
-            <td class="td-center"><span class="cal-cell"></span></td>
-            <td class="td-right"><span class="cal-cell"></span></td>
-          </tr>
-          <tr>
-            <td class="td-center"><span class="cal-cell"></span></td>
-            <td class=""><span class="cal-cell"></span></td>
-            <td class="td-center"><span class="cal-cell"></span></td>
-            <td class="td-right"><span class="cal-cell"></span></td>
-            <td class="td-center"><span class="cal-cell"></span></td>
-            <td class="td-right"><span class="cal-cell"></span></td>
-          </tr>
-          <tr>
-            <td class="td-center"><span class="cal-cell"></span></td>
-            <td class=""><span class="cal-cell"></span></td>
-            <td class="td-center"><span class="cal-cell"></span></td>
-            <td class="td-right"><span class="cal-cell"></span></td>
-            <td class="td-center"><span class="cal-cell"></span></td>
-            <td class="td-right"><span class="cal-cell"></span></td>
-          </tr>
-          <tr>
-            <td class="td-center"><span class="cal-cell"></span></td>
-            <td class=""><span class="cal-cell"></span></td>
-            <td class="td-center"><span class="cal-cell"></span></td>
-            <td class="td-right"><span class="cal-cell"></span></td>
-            <td class="td-center"><span class="cal-cell"></span></td>
-            <td class="td-right"><span class="cal-cell"></span></td>
-          </tr>
-          <tr>
-            <td class="td-center"><span class="cal-cell"></span></td>
-            <td class=""><span class="cal-cell"></span></td>
-            <td class="td-center"><span class="cal-cell"></span></td>
-            <td class="td-right"><span class="cal-cell"></span></td>
-            <td class="td-center"><span class="cal-cell"></span></td>
-            <td class="td-right"><span class="cal-cell"></span></td>
-          </tr>
-          <tr>
-            <td class="td-center"><span class="cal-cell"></span></td>
-            <td class=""><span class="cal-cell"></span></td>
-            <td class="td-center"><span class="cal-cell"></span></td>
-            <td class="td-right"><span class="cal-cell"></span></td>
-            <td class="td-center"><span class="cal-cell"></span></td>
-            <td class="td-right"><span class="cal-cell"></span></td>
-          </tr>
-          <tr><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td></tr>
-          <tr><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td></tr>
-          <tr><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td></tr>
-          <tr><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td></tr>
-          <tr><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td></tr>
-          <tr><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td></tr>
-          <tr><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td></tr>
-          <tr><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td></tr>
-          <tr><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td></tr>
-          <tr><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td></tr>
-          <tr><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td></tr>
-          <tr><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td></tr>
-          <tr><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td></tr>
-          <tr><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td></tr>
-          <tr><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td></tr>
-          <tr><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td><td class=""><span class="cal-cell"></span></td></tr>
-        </tbody>
-      </table>
-
-      <!-- Bloque Inferior integrado a la tabla -->
-      <div class="bottom-section">
-        <!-- Columna 1: Forma de Pago -->
-        <div class="payment-col">
-          <div class="payment-title preprinted">FORMA DE PAGO:</div>
-          <div class="payment-checks">
-            <span class="check-item"><span class="preprinted">Efectivo</span> <i class="checkbox-sq"><span class="print-data"></span></i></span>
-            <span class="check-item"><span class="preprinted">Tarj. de Débito</span> <i class="checkbox-sq"><span class="print-data"></span></i></span>
-            <span class="check-item"><span class="preprinted">Tarj. de Crédito</span> <i class="checkbox-sq"><span class="print-data"></span></i></span>
-          </div>
-          <div class="payment-line">
-            <span class="preprinted">Transferencia</span>
-            <div class="line-fill print-data"></div>
-          </div>
-          <div class="payment-line">
-            <span class="preprinted">Pago Móvil</span>
-            <div class="line-fill print-data"></div>
-          </div>
-          <div class="payment-line">
-            <span class="preprinted">Banco</span>
-            <div class="line-fill print-data"></div>
-          </div>
-        </div>
-
-        <!-- Columna 2: Ley del IVA / BCV -->
-        <div class="bcv-col">
-          <div class="bcv-text">
-            <span class="preprinted">Para cumplir con el Art. 25 de la ley del</span><br>
-            <span class="preprinted">IVA, se expresan los montos en Bs.</span><br>
-            <span class="preprinted">aplicando la tasa de cambio</span><span class="inline-line print-data"></span><br>
-            <span class="preprinted">establecida por el BCV.</span>
-          </div>
-          <div class="divisas-line">
-            <span class="preprinted">Monto Recibido en Divisas:</span>
-            <div class="line-fill print-data"></div>
-          </div>
-        </div>
-
-        <!-- Columna 3: Etiquetas de Totales -->
-        <div class="totals-labels-col">
-          <div class="tot-row-label h-base preprinted">BASE Bs.</div>
-          <div class="tot-row-label h-otros preprinted">OTROS Bs.</div>
-          <div class="tot-row-label h-iva">
-            <div class="iva-line-container">
-              <span class="preprinted">I.V.A.</span>
-              <span class="blank-pct print-data"></span>
-              <span class="preprinted">% SOBRE Bs.</span>
-              <span class="blank-monto print-data"></span>
-            </div>
-          </div>
-          <div class="tot-row-label h-igtf">
-            <div class="igtf-main">
-              <span class="preprinted">3% IGTF Bs.</span>
-              <span class="blank-monto print-data"></span>
-            </div>
-            <div class="igtf-sub preprinted">S/Prov. SNAT/2022/000013 del 03/03/2022</div>
-          </div>
-          <div class="tot-row-label h-total preprinted">TOTAL A PAGAR Bs.</div>
-        </div>
-
-        <!-- Columna 4: Casillas de Totales -->
-        <div class="totals-values-col print-data">
-          <div class="tot-val-cell h-base"></div>
-          <div class="tot-val-cell h-otros"></div>
-          <div class="tot-val-cell h-iva"></div>
-          <div class="tot-val-cell h-igtf"></div>
-          <div class="tot-val-cell"></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ==================== PIE DE IMPRENTA Y CONTROL (PREIMPRESO) ==================== -->
-    <footer class="footer-area preprinted">
-      <div class="imprenta-left">
-        <div class="imprenta-box">
-          <div class="imp-col imp-logo">
-            <svg width="22" height="20" viewBox="0 0 28 24" style="position:absolute; left:2px; top:3px;">
-              <path d="M9,3 L22,3 L17,14 L4,14 Z" fill="none" stroke="#111" stroke-width="1.3"></path>
-              <path d="M2,17 C7,20 15,20 25,16" fill="none" stroke="#111" stroke-width="1.2"></path>
-            </svg>
-            <span class="imp-logo-text">La Tarjeta<small>C.A</small></span>
-          </div>
-          <div class="imp-col imp-address">
-            <div>Calle Aripao, Edificio León, Piso PB, Oficina S/N, Sector Castillito, Pto. Ordaz,</div>
-            <div>Edo. Bolívar, Telf.: 9223844, RIF.: J-095076555, N° de Providencia del Seniat/08/00141</div>
-            <div>de fecha 06/02/2008, Región Guayana</div>
-          </div>
-          <div class="imp-col imp-split-col">
-            <div class="imp-split-top">Fecha</div>
-            <div class="imp-split-bottom imp-date-val">30-07-2026</div>
-          </div>
-          <div class="imp-col imp-split-col">
-            <div class="imp-split-top">N° de Factura</div>
-            <div class="imp-split-bottom">
-              <span>desde el N° 00001</span>
-              <span>hasta el N° 00050</span>
-            </div>
-          </div>
-          <div class="imp-col imp-split-col">
-            <div class="imp-split-top">N° de Control</div>
-            <div class="imp-split-bottom">
-              <span>desde el N° 00-0000001</span>
-              <span>hasta el N° 00-0000050</span>
-            </div>
-          </div>
-        </div>
-        <div class="copies-legend">
-          <span>ORIGINAL BLANCA: CLIENTE</span>
-          <span>COPIA DE COLOR SIN DERECHO A CRÉDITO FISCAL</span>
-        </div>
-      </div>
-
-      <div class="control-right">
-        <div class="control-title">N° DE CONTROL</div>
-        <div class="control-prefix">00-0000014</div>
-      </div>
-    </footer>
-  </div>
-
-  <!-- ==================== LÓGICA DE CALIBRACIÓN ==================== -->
-  
-
-  <!-- ==================== LÓGICA DE DATOS ==================== -->
-  
-
-
-</body></html>
